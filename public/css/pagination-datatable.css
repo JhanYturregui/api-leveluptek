@@ -1,0 +1,17 @@
+#tablaPrincipal_paginate {
+  font-size: 0.9em !important;
+}
+#tablaPrincipal_paginate .previous, .next, span a {
+  color: #8898aa !important;
+  border: 1px solid #dee2e6 !important;
+  background-color: #fff !important;
+  border-radius: 50% !important;
+}
+/* #tablaPrincipal_paginate span a:hover {
+  background-color: #5e72e4 !important;
+}
+#tablaPrincipal_paginate span .current{
+  color: #fff !important;
+  border-color: #5e72e4 !important;
+  background-color: #5e72e4 !important;
+} */
