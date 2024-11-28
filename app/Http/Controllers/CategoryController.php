@@ -2,18 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Coworking;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
-class CoworkingController extends Controller {
+use App\Models\Category;
+
+class CategoryController extends Controller
+{
   /**
    * Create a new controller instance.
    *
    * @return void
    */
-  public function __construct() {
+  public function __construct()
+  {
     $this->middleware('auth');
     date_default_timezone_set('America/Lima');
   }
@@ -23,23 +26,31 @@ class CoworkingController extends Controller {
    *
    * @return \Illuminate\Http\Response
    */
-  public function index() {
-    return view('pages.coworkings.index');
+  public function index()
+  {
+    $pageTitle = 'Categorías';
+    $route = 'categories';
+
+    return view('pages.categories.index', compact('pageTitle', 'route'));
   }
 
   /**
-  * Get data to show in datatables
-  *
-  * @return json
-  */
-  public function getData() {
-    $query = DB::table('coworkings')
-              ->select('id', 'name', 'description', 'created_at', 'updated_at')
-              ->orderBy('id', 'desc');
+   * Get data to show in datatables
+   *
+   * @return json
+   */
+  public function getData()
+  {
+    $query = Category::select(
+      'id',
+      'name',
+      DB::raw("DATE_FORMAT(created_at, '%d-%m-%Y %H:%i:%s') as created_at_formatted"),
+      DB::raw("DATE_FORMAT(updated_at, '%d-%m-%Y %H:%i:%s') as updated_at_formatted")
+    )->orderBy('id', 'desc');
 
     return datatables()
-      ->queryBuilder($query)
-      ->addColumn('col-actions', 'pages.coworkings.columns.actions')
+      ->eloquent($query)
+      ->addColumn('col-actions', 'pages.categories.columns.actions')
       ->rawColumns(['col-actions'])
       ->toJson();
   }
@@ -51,27 +62,28 @@ class CoworkingController extends Controller {
    * @param int $id (null ? registrar : actualizar )
    * @return \Illuminate\Http\Response
    */
-  public function validateData($data, $id) {
+  public function validateData($data, $id)
+  {
     $response = array();
 
     if ($id) {
-      if (!Coworking::find($id)) {
+      if (!Category::find($id)) {
         $response = ['status' => false, 'mensaje' => 'El registro no existe.'];
         return $response;
       }
     }
 
-    $unique = $id ? 'unique:coworkings,name,'. $id : 'unique:coworkings';
-    $rules = ['name' => 'bail|required|'.$unique];
+    $unique = $id ? 'unique:categories,name,' . $id : 'unique:categories';
+    $rules = ['name' => 'bail|required|' . $unique];
 
     $messages = [
       'name.required'  => 'El campo NOMBRE es obligatorio.',
       'name.unique'    => 'El NOMBRE ya está registrado.',
     ];
 
-    $validator = Validator::make($data, $rules, $messages);  
+    $validator = Validator::make($data, $rules, $messages);
     if ($validator->fails()) {
-      $response = ['status' => false, 'message' => $validator->messages()->first()];
+      $response = ['status' => false, 'message' => $validator->errors()->first()];
     } else {
       $response = ['status' => true];
     }
@@ -84,8 +96,11 @@ class CoworkingController extends Controller {
    *
    * @return \Illuminate\Http\Response
    */
-  public function create() {
-    return view('pages.coworkings.create');
+  public function create()
+  {
+    $pageTitle = 'Nueva Categoría';
+
+    return view('pages.categories.create', compact('pageTitle'));
   }
 
   /**
@@ -94,23 +109,22 @@ class CoworkingController extends Controller {
    * @param  \Illuminate\Http\Request  $request
    * @return \Illuminate\Http\Response
    */
-  public function store(Request $request) {
+  public function store(Request $request)
+  {
     $data = array();
     $data['name'] = mb_strtoupper($request->input('name'));
-    $data['description'] = $request->input('description');
 
     $response = $this->validateData($data, null);
     if (!$response['status']) return json_encode($response);
 
     try {
-      $coworking = Coworking::create($data);
+      Category::create($data);
 
       $response = [
         'status' => true,
         'message' => 'Registro correcto.',
       ];
-
-    } catch (Exception $e) {
+    } catch (\Exception $e) {
       $response = ['status' => false, 'message' => $e->getMessage()];
     }
 
@@ -123,9 +137,12 @@ class CoworkingController extends Controller {
    * @param  id
    * @return \Illuminate\Http\Response
    */
-  public function edit($id) {
-    $coworking = Coworking::find($id);
-    return view('pages.coworkings.edit', compact('coworking'));
+  public function edit($id)
+  {
+    $category = Category::find($id);
+    $pageTitle = 'Editar Categoría';
+
+    return view('pages.categories.edit', compact('category', 'pageTitle'));
   }
 
   /**
@@ -134,21 +151,20 @@ class CoworkingController extends Controller {
    * @param  \Illuminate\Http\Request  $request
    * @return \Illuminate\Http\Response
    */
-  public function update(Request $request){
+  public function update(Request $request)
+  {
     $id = intval($request->input('id'));
     $data = array();
     $data['name'] = mb_strtoupper($request->input('name'));
-    $data['description'] = $request->input('description');
 
     $response = $this->validateData($data, $id);
     if (!$response['status']) return json_encode($response);
 
     try {
-      $coworking = Coworking::find($id);
-      $coworking->update($data);
+      $category = Category::find($id);
+      $category->update($data);
       $response = ['status' => true, 'message' => 'Actualización correcta.'];
-
-    } catch (Exception $e) {
+    } catch (\Exception $e) {
       $response = ['status' => false, 'message' => $e->getMessage()];
     }
 
@@ -156,22 +172,22 @@ class CoworkingController extends Controller {
   }
 
   /**
-  * Eliminar un registro (inactivar)
-  *
-  * @param  \Illuminate\Http\Request  $request
-  * @return \Illuminate\Http\Response
-  */
-  public function delete(Request $request) {
+   * Delete resource
+   *
+   * @param  \Illuminate\Http\Request  $request
+   * @return \Illuminate\Http\Response
+   */
+  public function delete(Request $request)
+  {
     $id = $request->input('id');
     $response = array();
 
     try {
-      $coworking = Coworking::findOrFail($id);
-      $coworking->delete();
+      $category = Category::findOrFail($id);
+      $category->delete();
 
       $response = ['status' => true, 'message' => 'Eliminación correcta.'];
-
-    } catch (Exception $e) {
+    } catch (\Exception $e) {
       $response = ['status' => false, 'message' => $e->getMessage()];
     }
     return json_encode($response);

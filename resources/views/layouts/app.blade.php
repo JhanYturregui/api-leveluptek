@@ -65,6 +65,8 @@
     <!-- Datatables -->
     <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
 
+    <script src="{{ asset('js/common.js') }}"></script>
+
     @yield('js')
   </body>
 </html>

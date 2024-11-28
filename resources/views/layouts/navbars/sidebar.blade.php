@@ -82,20 +82,64 @@
           </a>
         </li>
         @if (auth()->user()->role === config('constants.USER_ROLE_ADMIN'))
-          <li class="nav-item">
-            <a class="nav-link" href="{{ route('coworkings') }}">
-              <i class="fas fa-list"></i>
-              {{ __('SALAS') }}
+          {{--
+            <li class="nav-item">
+            <a class="nav-link" href="{{ route('categories') }}">
+            <i class="fas fa-list"></i>
+            {{ __('Categorías') }}
             </a>
+            </li>
+            <li class="nav-item">
+            <a class="nav-link" href="{{ route('materials') }}">
+            <i class="fas fa-list"></i>
+            {{ __('Materiales') }}
+            </a>
+            </li>
+            <li class="nav-item">
+            <a class="nav-link" href="{{ route('treatments') }}">
+            <i class="fas fa-list"></i>
+            {{ __('Tratamientos') }}
+            </a>
+            </li>
+          --}}
+
+          <li class="nav-item">
+            <a
+              class="nav-link active"
+              href="#navbar-examples"
+              data-toggle="collapse"
+              role="button"
+              aria-expanded="true"
+              aria-controls="navbar-examples"
+            >
+              <i class="fab fa-laravel" style="color: #5e72e4"></i>
+              <span class="nav-link-text">{{ __('ADMINISTRACIÓN') }}</span>
+            </a>
+
+            <div class="collapse show" id="navbar-examples">
+              <ul class="nav nav-sm flex-column">
+                <li class="nav-item">
+                  <a class="nav-link" href="{{ route('categories') }}">
+                    <i class="fas fa-list"></i>
+                    {{ __('Categorías') }}
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{{ route('materials') }}">
+                    <i class="fas fa-list"></i>
+                    {{ __('Materiales') }}
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" href="{{ route('treatments') }}">
+                    <i class="fas fa-list"></i>
+                    {{ __('Tratamientos') }}
+                  </a>
+                </li>
+              </ul>
+            </div>
           </li>
         @endif
-
-        <li class="nav-item">
-          <a class="nav-link" href="{{ route('reservations') }}">
-            <i class="fas fa-list"></i>
-            {{ __('RESERVAS') }}
-          </a>
-        </li>
       </ul>
     </div>
   </div>

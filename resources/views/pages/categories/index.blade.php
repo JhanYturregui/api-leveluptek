@@ -1,31 +1,17 @@
 @extends('layouts.app')
 
 @section('content')
-  <div class="row">
+  <div class="row mt--6">
     <div class="col">
       <div class="card">
-        <!-- Card header -->
-        <div class="card-header border-0">
-          <div class="row">
-            <h3 class="mb-0 col-8">{{ __('Gestión de Coworkings') }}</h3>
-            <div class="col-4 text-right">
-              <a href="{{ route('coworkings_create') }}" class="btn btn-primary botones-expand">
-                <i class="fas fa-plus mr-2"></i>
-                {{ 'Registrar' }}
-              </a>
-            </div>
-          </div>
-        </div>
-
         <div class="table-responsive p-4">
           <table id="mainTable" class="table align-items-center table-flush">
             <thead class="thead-light">
               <tr>
                 <th scope="col" class="sort" data-sort="name">{{ __('ID') }}</th>
-                <th scope="col" class="sort" data-sort="name">{{ __('Nombre') }}</th>
-                <th scope="col" class="sort" data-sort="name">{{ __('Descripción') }}</th>
-                <th scope="col" class="sort" data-sort="name">{{ __('Fecha creación') }}</th>
-                <th scope="col" class="sort" data-sort="name">{{ __('Fecha actualización') }}</th>
+                <th scope="col" class="sort" data-sort="name">{{ __('NOMBRE') }}</th>
+                <th scope="col" class="sort" data-sort="name">{{ __('FECHA CREACIÓN') }}</th>
+                <th scope="col" class="sort" data-sort="name">{{ __('FECHA ACTUALIZACIÓN') }}</th>
                 <th scope="col"><i class="fas fa-wrench"></i></th>
               </tr>
             </thead>
@@ -55,7 +41,7 @@
         </div>
         <div class="modal-body">
           <input type="hidden" id="idDataDelete" value="" />
-          <p>{{ __('¿Deseas eliminar este registro?') }}</p>
+          <p>{{ __('¿Deseas eliminar esta categoría?') }}</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('Cancelar') }}</button>
@@ -66,6 +52,6 @@
   </div>
 
   @section('js')
-    <script src="{{ asset('js/coworking.js') }}"></script>
+    <script src="{{ asset('js/category.js') }}"></script>
   @endsection
 @endsection

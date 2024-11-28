@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Reservation extends Model
+class Unit extends Model
 {
     use HasFactory;
 
@@ -14,5 +14,5 @@ class Reservation extends Model
      *
      * @var array
      */
-    protected $fillable = ['id_user', 'id_coworking', 'start_date', 'end_date', 'state'];
+    protected $fillable = ['name', 'abbreviation'];
 }

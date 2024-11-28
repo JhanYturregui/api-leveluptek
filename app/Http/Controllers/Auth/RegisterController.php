@@ -64,11 +64,9 @@ class RegisterController extends Controller
      */
     protected function create(array $data)
     {
-        $role = User::count() === 0 ? config('constants.USER_ROLE_ADMIN') : config('constants.USER_ROLE_CUSTOMER');
         return User::create([
             'name' => $data['name'],
             'email' => $data['email'],
-            'role' => $role,
             'password' => Hash::make($data['password']),
         ]);
     }

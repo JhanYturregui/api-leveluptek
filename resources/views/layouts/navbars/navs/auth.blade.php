@@ -1,10 +1,20 @@
 <!-- Top navbar -->
-<nav class="navbar navbar-top navbar-expand-md navbar-dark" id="navbar-main">
+<nav class="navbar navbar-top navbar-expand-md navbar-dark bg-primary" style="border-bottom: 1px solid #607d8b" id="navbar-main">
   <div class="container-fluid">
     <!-- Brand -->
     <a class="h4 mb-0 text-white text-uppercase d-none d-lg-inline-block" href="{{ route('home') }}">
-      {{ __('Dashboard') }}
-    </a>
+      {{ __('') }}
+    </a> 
+
+    <!-- <nav aria-label="breadcrumb" class="d-none d-md-inline-block ml-md-4">
+      <ol class="breadcrumb breadcrumb-links breadcrumb-dark">
+      <li class="breadcrumb-item">
+      <a href="#"><i class="fas fa-home"></i></a>
+      </li>
+      <li class="breadcrumb-item"><a href="#">Components</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Icons</li>
+      </ol>
+    </nav> -->
 
     <!-- User -->
     <ul class="navbar-nav align-items-center d-none d-md-flex">
@@ -49,3 +59,26 @@
     </ul>
   </div>
 </nav>
+
+@if (!isset($hideSecondHeader))
+<div class="header bg-primary pb-5 pt-2">
+  <div class="container-fluid">
+    <div class="header-body">
+      <div class="row align-items-center py-4">
+        <div class="col-lg-6 col-7">
+          <h6 class="h2 text-white d-inline-block mb-0">{{ $pageTitle }}</h6>
+          
+        </div>
+        @if (isset($route))
+        <div class="col-lg-6 col-5 text-right">
+          <a href="{{ route($route.'_create') }}"" class="btn btn-neutral">
+            <i class="fas fa-plus"></i>
+            Nuevo
+          </a>
+        </div>
+        @endif
+      </div>
+    </div>
+  </div>
+</div>
+@endif
