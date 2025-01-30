@@ -19,7 +19,7 @@ class CreateUsersTable extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->enum('role', [config('constants.USER_ROLE_SUPER'), config('constants.USER_ROLE_ADMIN'), config('constants.USER_ROLE_DOCTOR')])->default(config('constants.USER_ROLE_DOCTOR'));
+            $table->enum('role', [config('constants.USER_ROLE_ADMIN'), config('constants.USER_ROLE_SELLER')])->default(config('constants.USER_ROLE_SELLER'));
             $table->rememberToken();
             $table->timestamps();
         });

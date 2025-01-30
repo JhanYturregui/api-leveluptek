@@ -5,12 +5,11 @@
     role="button"
     data-toggle="dropdown"
     aria-haspopup="true"
-    aria-expanded="false"
-  >
+    aria-expanded="false">
     <i class="fas fa-ellipsis-v"></i>
   </a>
   <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
-    <a class="dropdown-item" href="{{ route('treatments_edit', $id) }}">
+    <a class="dropdown-item" href="{{ route('products_edit', $id) }}">
       <i class="fas fa-pen"></i>
       {{ __('Editar') }}
     </a>

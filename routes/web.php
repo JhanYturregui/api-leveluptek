@@ -18,26 +18,14 @@ Route::group(['middleware' => 'auth'], function () {
 		Route::delete('/', [App\Http\Controllers\CategoryController::class, 'delete'])->name('categories_delete');
 	});
 
-	Route::prefix('materiales')->middleware(['check.admin.role'])->group(function () {
-		Route::get('/', [App\Http\Controllers\MaterialController::class, 'index'])->name('materials');
-		Route::get('/data', [App\Http\Controllers\MaterialController::class, 'getData'])->name('materials_data');
-		Route::get('/crear', [App\Http\Controllers\MaterialController::class, 'create'])->name('materials_create');
-		Route::post('/', [App\Http\Controllers\MaterialController::class, 'store'])->name('materials_register');
-		Route::get('/editar/{id}', [App\Http\Controllers\MaterialController::class, 'edit'])->name('materials_edit');
-		Route::put('/', [App\Http\Controllers\MaterialController::class, 'update'])->name('materials_update');
-		Route::delete('/', [App\Http\Controllers\MaterialController::class, 'delete'])->name('materials_delete');
-		Route::get('/stock', [App\Http\Controllers\MaterialController::class, 'stock'])->name('materials_stock');
-		Route::post('/add-stock', [App\Http\Controllers\MaterialController::class, 'addStock'])->name('materials_add_stock');
-	});
-
-	Route::prefix('tratamientos')->middleware(['check.admin.role'])->group(function () {
-		Route::get('/', [App\Http\Controllers\TreatmentController::class, 'index'])->name('treatments');
-		Route::get('/data', [App\Http\Controllers\TreatmentController::class, 'getData'])->name('treatments_data');
-		Route::get('/crear', [App\Http\Controllers\TreatmentController::class, 'create'])->name('treatments_create');
-		Route::post('/', [App\Http\Controllers\TreatmentController::class, 'store'])->name('treatments_register');
-		Route::get('/editar/{id}', [App\Http\Controllers\TreatmentController::class, 'edit'])->name('treatments_edit');
-		Route::put('/', [App\Http\Controllers\TreatmentController::class, 'update'])->name('treatments_update');
-		Route::delete('/', [App\Http\Controllers\TreatmentController::class, 'delete'])->name('treatments_delete');
+	Route::prefix('productos')->middleware(['check.admin.role'])->group(function () {
+		Route::get('/', [App\Http\Controllers\ProductController::class, 'index'])->name('products');
+		Route::get('/data', [App\Http\Controllers\ProductController::class, 'getData'])->name('products_data');
+		Route::get('/crear', [App\Http\Controllers\ProductController::class, 'create'])->name('products_create');
+		Route::post('/', [App\Http\Controllers\ProductController::class, 'store'])->name('products_register');
+		Route::get('/editar/{id}', [App\Http\Controllers\ProductController::class, 'edit'])->name('products_edit');
+		Route::put('/', [App\Http\Controllers\ProductController::class, 'update'])->name('products_update');
+		Route::delete('/', [App\Http\Controllers\ProductController::class, 'delete'])->name('products_delete');
 	});
 
 	/* Route::prefix('reservations')->group(function () {

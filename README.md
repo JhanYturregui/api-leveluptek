@@ -1,4 +1,4 @@
-# Clonar proyecto: git clone git@github.com:JhanYturregui/curay.git
+# Clonar proyecto: git clone git@github.com:JhanYturregui/starter-app.git
 
 # Instalar dependencias: composer install
 
