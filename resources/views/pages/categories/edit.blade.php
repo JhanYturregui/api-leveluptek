@@ -7,18 +7,20 @@
         <!-- Form -->
         <div class="card-body">
           <!-- Data -->
-          <input type="hidden" id="idData" value="{{ $category['id'] }}" />
+          <input type="hidden" id="idData" value="{{ $category->id }}" />
           <div class="input-group form-group">
-            <div class="input-group-prepend">
-              <span class="input-group-text"><i class="fas fa-pen-nib"></i></span>
+            <div class="input-group input-group-alternative">
+              <div class="input-group-prepend">
+                <span class="input-group-text"><i class="fas fa-pen-nib"></i></span>
+              </div>
+              <input
+                id="name"
+                type="text"
+                class="form-control"
+                placeholder="{{ __('Nombre') }}"
+                value="{{ $category->name }}"
+              />
             </div>
-            <input
-              id="name"
-              type="text"
-              class="form-control"
-              placeholder="{{ __('Nombre') }}"
-              value="{{ $category['name'] }}"
-            />
           </div>
         </div>
         <div class="card-footer">

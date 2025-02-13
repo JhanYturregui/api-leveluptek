@@ -78,7 +78,6 @@
                         {{ __('INICIO') }}
                     </a>
                 </li>
-                @if (auth()->user()->role === config('constants.USER_ROLE_ADMIN'))
                 <li class="nav-item">
                     <a
                         class="nav-link active"
@@ -108,7 +107,36 @@
                         </ul>
                     </div>
                 </li>
-                @endif
+
+                <li class="nav-item">
+                    <a
+                        class="nav-link active"
+                        href="#navbar-examples"
+                        data-toggle="collapse"
+                        role="button"
+                        aria-expanded="true"
+                        aria-controls="navbar-examples">
+                        <i class="fab fa-laravel" style="color: #5e72e4"></i>
+                        <span class="nav-link-text">{{ __('CAJA') }}</span>
+                    </a>
+
+                    <div class="collapse show" id="navbar-examples">
+                        <ul class="nav nav-sm flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('purchases') }}">
+                                    <i class="fas fa-list"></i>
+                                    {{ __('Compras') }}
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('sales') }}">
+                                    <i class="fas fa-list"></i>
+                                    {{ __('Ventas') }}
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
             </ul>
         </div>
     </div>

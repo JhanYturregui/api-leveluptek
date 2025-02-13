@@ -9,7 +9,7 @@ class Product extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['category_id', 'code', 'name', 'favorite', 'active'];
+    protected $fillable = ['category_id', 'code', 'name', 'stock', 'favorite', 'active'];
 
     public function category()
     {
@@ -19,5 +19,10 @@ class Product extends Model
     public function prices()
     {
         return $this->hasMany(Price::class);
+    }
+
+    public function purchases()
+    {
+        return $this->belongsToMany(Purchase::class, 'product_purchases')->withPivot('quantity', 'price');
     }
 }

@@ -30,7 +30,7 @@ function register() {
   const name = $('#name').val();
 
   if (!name || name.length === 0) {
-    Swal.fire('Error!', 'Campo requerido', 'error');
+    showAlert('Error!', 'Campo requerido', 'error', 'Ok', 'name');
     return;
   }
 

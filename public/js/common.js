@@ -50,3 +50,101 @@ function destroyDataTable(idTable) {
   const table = $('#' + idTable).DataTable();
   table.destroy();
 }
+
+function showAlert(title, text, icon, confirmButtonText, id) {
+  Swal.fire({
+    title,
+    text,
+    icon,
+    confirmButtonText,
+    didClose: () => {
+      setTimeout(() => {
+        $(`#${id}`).focus();
+      }, 10);
+    }
+  })
+}
+
+
+function getProductsForTransactions() {
+    const PRODUCTS_DATATABLE_PARAMS = {
+        idTable: 'productsTable',
+        url: `../../productos/transacciones`,
+        type: 'get',
+        columns: [
+            { data: 'code', name: 'p.code', searchable: false },
+            { data: 'name', name: 'p.name' },
+            { data: 'col-select', searchable: false, orderable: false },
+        ],
+        searching: true,
+    }
+    initDatatable(PRODUCTS_DATATABLE_PARAMS);
+    $('#modalProducts').modal();
+}
+
+function getSuppliersForTransactions() {
+  const SUPPLIERS_DATATABLE_PARAMS = {
+    idTable: 'suppliersTable',
+    url: `../../proveedores/transacciones`,
+    type: 'get',
+    columns: [
+      { data: 'document_number' },
+      { data: 'business_name' },
+      { data: 'col-select', searchable: false, orderable: false },
+  ],
+    searching: true,
+  }
+  initDatatable(SUPPLIERS_DATATABLE_PARAMS);
+  $('#modalSuppliers').modal();
+}
+
+function getCustomersForTransactions() {
+  const CUSTOMERS_DATATABLE_PARAMS = {
+    idTable: 'customersTable',
+    url: `../../clientes/transacciones`,
+    type: 'get',
+    columns: [
+      { data: 'document_number' },
+      { data: 'full_name' },
+      { data: 'col-select', searchable: false, orderable: false },
+  ],
+    searching: true,
+  }
+  initDatatable(CUSTOMERS_DATATABLE_PARAMS);
+  $('#modalCustomers').modal();
+}
+
+let currentCategory = 0;
+function getProductsByCategory(categoryId) {
+    $.ajax({
+        type: 'get',
+        url: `../../productos/obtener_por_categoria/${categoryId}`,
+        dataType: 'json',
+        //data,
+        success: function(a){
+            if (a.status) {
+                $('#containerProductsByCategory').html('');
+                const products = a.data;
+                let productsHtml = '';
+                products.forEach(product => {
+                    const prices = product.prices.map(price => price.price);
+                    console.log('prices', prices)
+                    productsHtml += `<span class="badge badge-pill badge-info p-2 mr-1" onclick="addProduct({ id: ${product.id}, name: '${product.name}', quantity: 1, prices: [${prices}], price: ${prices[0]} })">${product.name}</span>`;
+                    //productsHtml += '<span class="badge badge-pill badge-info p-2 mr-1">' + product.name + '</span>'
+                });
+                $('#containerProductsByCategory').html(productsHtml);
+                $(`#spanCategory-${currentCategory}`).removeClass('badge-primary');
+                $(`#spanCategory-${currentCategory}`).addClass('badge-dark');
+                currentCategory = categoryId;
+                $(`#spanCategory-${categoryId}`).removeClass('badge-dark');
+                $(`#spanCategory-${categoryId}`).addClass('badge-primary');
+
+            } else {
+                Swal.fire('Error!', a.message, 'error');
+            }
+        },
+        error: function(e) {
+            Swal.fire('Error!', e.message, 'error');
+        },
+    });
+}

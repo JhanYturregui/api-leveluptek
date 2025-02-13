@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+  <input type="hidden" id="hasCashSession" value="{{ auth()->user()->has_cash_session }}" />
   <div class="row pt-2">
     <div class="col-xl-8 mb-5 mb-xl-0">
       <div class="card bg-gradient-default shadow">
@@ -298,6 +299,36 @@
               </tr>
             </tbody>
           </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Delete -->
+  <div
+    class="modal fade"
+    id="modalCashSession"
+    data-backdrop="static"
+    tabindex="-1"
+    role="dialog"
+    aria-labelledby="modalCashSessionLabel"
+    aria-hidden="true"
+  >
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title" id="modalCashSessionLabel">{{ __('Eliminar') }}</h3>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="idDataDelete" value="" />
+          <p>{{ __('¿Deseas eliminar esta categoría?') }}</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('Cancelar') }}</button>
+          <button type="button" class="btn btn-primary" onclick="remove()">{{ __('Confirmar') }}</button>
         </div>
       </div>
     </div>

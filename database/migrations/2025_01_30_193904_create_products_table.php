@@ -19,6 +19,7 @@ class CreateProductsTable extends Migration
             $table->string('code', 30);
             $table->string('name');
             $table->enum('unit', [config('constants.MEASURE_UNIT_UNIT')])->default(config(('constants.MEASURE_UNIT_UNIT')));
+            $table->integer('stock')->default(0);
             $table->boolean('favorite')->default(false);
             $table->boolean('active')->default(true);
             $table->timestamps();

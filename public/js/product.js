@@ -1,5 +1,8 @@
 let origin = '';
 let scrollX = false;
+let pricesList = [];
+const path = window.location.pathname.split('/');
+const IS_UPDATE = path[path.length - 1] > 0;
 const ROUTE_MODULE = 'productos';
 const MAIN_DATATABLE_PARAMS = {
   idTable: 'mainTable',
@@ -16,10 +19,21 @@ const MAIN_DATATABLE_PARAMS = {
   searching: true,
 }
 
+function getPrices() {
+  if (IS_UPDATE) {
+    let prices = JSON.parse($('#prices').val());
+    pricesList = prices.map(price => {
+      return parseFloat(price.price)
+    })
+    showPrices();
+  } 
+}
+
 window.onload = function() {
   origin = window.location.origin;
   scrollX = window.screen.width <= 1240 ? true : false;
   initDatatable(MAIN_DATATABLE_PARAMS);
+  getPrices();
 }
 
 window.onresize = function () {
@@ -30,14 +44,25 @@ window.onresize = function () {
 function register() {
   const code = $('#code').val();
   const name = $('#name').val();
+  const category = $('#category').val();
+  const favorite = $('#favorite').is(':checked');
+
+  if (!code || code.length === 0) {
+    showAlert('Error!', 'Campo requerido', 'error', 'Ok', 'code');
+    return;
+  }
 
   if (!name || name.length === 0) {
-    Swal.fire('Error!', 'Campo requerido', 'error');
+    showAlert('Error!', 'Campo requerido', 'error', 'Ok', 'name');
     return;
   }
 
   const data = {
     name,
+    code,
+    category,
+    favorite,
+    pricesList,
     _token: $('input[name=_token]').val(),
   };
 
@@ -62,17 +87,29 @@ function register() {
 
 function update() {
   const id = $('#idData').val();
+  const code = $('#code').val();
   const name = $('#name').val();
+  const category = $('#category').val();
+  const favorite = $('#favorite').is(':checked');
 
-  if (!name || name.length === 0) {
-    Swal.fire('Error!', 'Campo requerido', 'error');
+  if (!code || code.length === 0) {
+    showAlert('Error!', 'Campo requerido', 'error', 'Ok', 'code');
     return;
   }
-  
+
+  if (!name || name.length === 0) {
+    showAlert('Error!', 'Campo requerido', 'error', 'Ok', 'name');
+    return;
+  }
+
   const data = {
     id,
     name,
-    _token: $('input[name=_token]').val()
+    code,
+    category,
+    favorite,
+    pricesList,
+    _token: $('input[name=_token]').val(),
   };
 
   $.ajax({
@@ -119,4 +156,52 @@ function remove() {
       Swal.fire('Error!', e.message, 'error');
     }
   })
+}
+
+$('#price').on('keyup', function(e) {
+  if (e.keyCode === 13) {
+    addPrice();
+  }
+})
+
+function addPrice() {
+  const price = parseFloat($('#price').val());
+  const exists = pricesList.find(pr => pr === price);
+  if ( !exists ) {
+    pricesList.push(price);
+    $('#price').val('');
+    $('#price').focus();
+  }
+  showPrices();
+}
+
+function removePrice(price) {
+  pricesList = pricesList.filter(pr => pr !== price);
+  showPrices();
+}
+
+function showPrices() {
+  $('#divPricesList').html('');
+
+  let row = `
+    <table class="table table-bordered mt-3 rounded">
+      <thead class="bg-primary text-white">
+        <tr>
+          <th>Precio</th>
+          <th>Quitar</th>
+        </tr>
+      </thead>
+      <tbody>`
+
+  pricesList.forEach(price => {
+    row += `
+        <tr>
+          <td style="width:70%; word-wrap: break-word; white-space: normal;">${price}</td>
+          <td class="text-center"><i class="fas fa-trash" style="color: #e57373; cursor: pointer" title="Quitar" onclick="removePrice(${price})"></i></td>
+        </tr>`;
+  })
+  row += `
+      </tbody>
+    </table>`;
+  $('#divPricesList').html(row);
 }
