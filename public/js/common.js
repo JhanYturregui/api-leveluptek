@@ -67,10 +67,14 @@ function showAlert(title, text, icon, confirmButtonText, id) {
 
 
 function getProductsForTransactions() {
+    const isSale = window.location.pathname.includes('ventas') ? true : false;
     const PRODUCTS_DATATABLE_PARAMS = {
         idTable: 'productsTable',
         url: `../../productos/transacciones`,
         type: 'get',
+        data: {
+          isSale,
+        },
         columns: [
             { data: 'code', name: 'p.code', searchable: false },
             { data: 'name', name: 'p.name' },
@@ -127,10 +131,10 @@ function getProductsByCategory(categoryId) {
                 const products = a.data;
                 let productsHtml = '';
                 products.forEach(product => {
-                    const prices = product.prices.map(price => price.price);
-                    console.log('prices', prices)
-                    productsHtml += `<span class="badge badge-pill badge-info p-2 mr-1" onclick="addProduct({ id: ${product.id}, name: '${product.name}', quantity: 1, prices: [${prices}], price: ${prices[0]} })">${product.name}</span>`;
-                    //productsHtml += '<span class="badge badge-pill badge-info p-2 mr-1">' + product.name + '</span>'
+                    if (product.stock > 0 || window.location.pathname.includes('compras')) {
+                        const prices = product.prices.map(price => price.price);
+                        productsHtml += `<span class="badge badge-pill badge-info p-2 mr-1" onclick="addProduct({ id: ${product.id}, name: '${product.name}', quantity: 1, prices: [${prices}], price: ${prices[0]}, stock: ${product.stock} })">${product.name}</span>`;
+                    }
                 });
                 $('#containerProductsByCategory').html(productsHtml);
                 $(`#spanCategory-${currentCategory}`).removeClass('badge-primary');

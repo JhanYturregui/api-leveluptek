@@ -11,6 +11,11 @@ class Purchase extends Model
 
     protected $fillable = ['cash_session_id', 'supplier_id', 'correlative', 'total_amount', 'url_image', 'canceled'];
 
+    public function cash_session()
+    {
+        return $this->belongsTo(CashSession::class);
+    }
+
     public function supplier()
     {
         return $this->belongsTo(Supplier::class);

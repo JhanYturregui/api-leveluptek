@@ -101,11 +101,13 @@ class ProductController extends Controller
         try {
             $product = Product::create($data);
 
-            $pricesList = [];
-            foreach ($prices as $price) {
-                $pricesList[] = ['price' => $price];
+            if ($prices) {
+                $pricesList = [];
+                foreach ($prices as $price) {
+                    $pricesList[] = ['price' => $price];
+                }
+                $product->prices()->createMany($pricesList);
             }
-            $product->prices()->createMany($pricesList);
             DB::commit();
 
             $response = [
@@ -158,12 +160,13 @@ class ProductController extends Controller
 
             Price::where('product_id', $id)->delete();
 
-            $pricesList = [];
-            foreach ($prices as $price) {
-                $pricesList[] = ['price' => $price];
+            if ($prices) {
+                $pricesList = [];
+                foreach ($prices as $price) {
+                    $pricesList[] = ['price' => $price];
+                }
+                $product->prices()->createMany($pricesList);
             }
-            $product->prices()->createMany($pricesList);
-
             DB::commit();
 
             $response = ['status' => true, 'message' => 'Actualización correcta.'];
@@ -209,7 +212,7 @@ class ProductController extends Controller
         $response = array();
 
         try {
-            $product = Product::where('code', $code)->where('active', 1)->with('prices')->first();
+            $product = $this->productService->findByCode($code);
 
             $response = ['status' => true, 'data' => $product];
         } catch (\Exception $e) {
@@ -223,13 +226,16 @@ class ProductController extends Controller
      *
      * @return json
      */
-    public function getProductsForTransactions()
+    public function getProductsForTransactions(Request $request)
     {
+        $isSale = $request->input('isSale');
+        $view = $isSale === 'true' ? 'pages.products.columns.select-for-sale' : 'pages.products.columns.select-for-purchase';
         $query = Product::from('products as p')
             ->select(
                 'p.id',
                 'p.code',
                 'p.name',
+                'p.stock',
                 'c.name as category_name'
             )
             ->join('categories as c', 'p.category_id', 'c.id')
@@ -239,10 +245,10 @@ class ProductController extends Controller
 
         return datatables()
             ->eloquent($query)
-            ->addColumn('prices', function ($query) {
-                return $query->prices->pluck('price')->implode(', ');
+            ->addColumn('sales_prices', function ($query) {
+                return $query->prices->pluck('price');
             })
-            ->addColumn('col-select', 'pages.products.columns.select')
+            ->addColumn('col-select', $view)
             ->rawColumns(['col-select'])
             ->toJson();
     }
@@ -254,12 +260,7 @@ class ProductController extends Controller
      */
     public function getByCategory($categoryId)
     {
-        if (intval($categoryId) === 0) {
-            $products = $this->productService->getFavorites();
-        } else {
-            $products = $this->productService->getByCategory($categoryId);
-        }
-
+        $products = $this->productService->getByCategory($categoryId);
         $response = ['status' => true, 'data' => $products];
 
         return json_encode($response);

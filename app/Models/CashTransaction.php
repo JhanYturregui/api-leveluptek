@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Sale extends Model
+class CashTransaction extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['cash_session_id', 'customer_id', 'correlative', 'total_amount', 'partial_payment', 'type', 'payment_method', 'canceled'];
+    protected $fillable = ['cash_session_id', 'customer_id', 'type', 'description', 'amount'];
 
     public function cash_session()
     {
@@ -19,10 +19,5 @@ class Sale extends Model
     public function customer()
     {
         return $this->belongsTo(Customer::class);
-    }
-
-    public function products()
-    {
-        return $this->belongsToMany(Product::class, 'product_sales')->withPivot('quantity', 'price');
     }
 }

@@ -55,7 +55,19 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-3 offset-lg-9 pl-5 mt-2 total-amount">
+                        <div class="col-lg-3 offset-lg-6 pl-5 mt-2 total-amount">
+                            <label for="">
+                                A cuenta: 
+                                <input 
+                                    type="number" 
+                                    id="partialPayment"
+                                    class="form-control ml-2" 
+                                    value="0.00" 
+                                    readonly 
+                                    style="width: 110px !important" >
+                            </label>
+                        </div>
+                        <div class="col-lg-3 pl-5 mt-2 total-amount">
                             <label for="">
                                 TOTAL: <span id="textTotalAmount">S/. 0.00</span>
                             </label>
@@ -79,30 +91,45 @@
                 </div>
 
                 <div class="summary col-lg-4 row">
-                    <div class="col-lg-12">
+                    <div class="col-lg-6">
                         <div class="input-group form-group">
                             <div class="input-group input-group-alternative">
-                                <div class="input-group-prepend">
+                                <div class="input-group-prepend" title="{{ __('Forma de pago') }}">
                                     <span class="input-group-text"><i class="fas fa-pen-nib"></i></span>
                                 </div>
-                                <input type="file" id="invoice" name="invoice" accept="image/*" class="form-control" />
-                                <div class="input-group-append" id="invoiceImagePreviewContainer">
-                                    <img id="invoiceImagePreview" alt="Vista previa" />
-                                    <button id="removeInvoiceImagePreview" title="Quitar archivo" class="btn btn-sm btn-primary"><i class="fas fa-trash"></i></button>
-                                </div>
+                                <select class="form-control" name="saleType" id="saleType" onchange="changeSaleType(this.value)">
+                                    @foreach (config('constants.SALE_TYPES') as $saleType)
+                                        <option value="{{ $saleType }}">{{ $saleType }}</option>
+                                    @endforeach
+                                </select>
                             </div>
+                        </div>
+                    </div>
+                    <div class="input-group form-group col-lg-6">
+                        <div class="input-group input-group-alternative">
+                            <div class="input-group-prepend" title="{{ __('Método de pago') }}">
+                                <span class="input-group-text"><i class="fas fa-money-bill"></i></span>
+                            </div>
+                            <select id="paymentMethod" name="paymentMethod" class="form-control">
+                                @foreach (config('constants.PAYMENT_METHODS') as $paymentMethod)
+                                    <option value="{{ $paymentMethod }}">{{ $paymentMethod }}</option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
                     <div class="col-lg-12 favorites-container">
                         <section class="favorites-container-products" id="containerProductsByCategory">
                             @foreach ($favorites as $product)
-                            <span class="badge badge-pill badge-info p-2" onclick="addProduct({ id: {{ $product->id }}, name: '{{ $product->name }}', quantity: 1 })">{{ $product->name }}</span>
+                            <span 
+                                class="badge badge-pill badge-info p-2" 
+                                onclick="addProduct({{ json_encode(['id' => $product->id, 'name' => $product->name, 'quantity' => 1, 'prices' => $product->sales_prices, 'price' => $product->sales_prices[0], 'stock' => $product->stock]) }})">{{ $product->name }}
+                            </span>
                             @endforeach
                         </section>
                         <section class="favorites-container-categories">
-                            <span class="badge badge-pill badge-primary p-3" id="spanCategory-0" onclick="getProductsByCategory(0)">{{ __('Favoritos') }}</span>
+                            <span class="badge badge-pill badge-primary p-3 mb-1" id="spanCategory-0" onclick="getProductsByCategory(0)">{{ __('Favoritos') }}</span>
                             @foreach ($categories as $category)
-                            <span class="badge badge-pill badge-dark p-3" id="spanCategory-{{ $category->id}}" onclick="getProductsByCategory({{ $category->id }})">{{ $category->name }}</span>
+                            <span class="badge badge-pill badge-dark p-3 mb-1" id="spanCategory-{{ $category->id}}" onclick="getProductsByCategory({{ $category->id }})">{{ $category->name }}</span>
                             @endforeach
                         </section>
                     </div>

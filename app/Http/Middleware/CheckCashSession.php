@@ -19,7 +19,8 @@ class CheckCashSession
     {
         $cashSession = CashSession::where('user_id', auth()->user()->id)->where('date', date('Y-m-d'))->where('open', true)->exists();
         if (!$cashSession) {
-            return redirect('/compras');
+            $path = explode('/', $request->path());
+            return redirect('/' . $path[0]);
         }
 
         return $next($request);

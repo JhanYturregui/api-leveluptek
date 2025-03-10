@@ -25,13 +25,41 @@ class ProductService
         $product->save();
     }
 
-    public function getFavorites()
-    {
-        return Product::where('favorite', 1)->with('prices')->get();
-    }
-
     public function getByCategory($categoryId)
     {
-        return Product::where('category_id', $categoryId)->where('active', 1)->with('prices')->get();
+        $products = Product::where('active', 1)
+            ->when(intval($categoryId) === 0, function ($query) {
+                return $query->where('favorite', 1);
+            })
+            ->when(intval($categoryId) !== 0, function ($query) use ($categoryId) {
+                return $query->where('category_id', $categoryId);
+            })
+            ->with('prices')
+            ->get();
+
+        foreach ($products as $product) {
+            $arrSalesPrices = [];
+            foreach ($product['prices'] as $price) {
+                array_push($arrSalesPrices, $price->price);
+            }
+            $product->sales_prices = $arrSalesPrices;
+        }
+
+        return $products;
+    }
+
+    public function findByCode($code)
+    {
+        $product = Product::where('code', $code)->where('active', 1)->with('prices')->first();
+        if ($product) {
+            $prices = $product['prices'];
+            $arrSalesPrices = [];
+            foreach ($prices as $price) {
+                array_push($arrSalesPrices, $price->price);
+            }
+            $product->sales_prices = $arrSalesPrices;
+        }
+
+        return $product;
     }
 }

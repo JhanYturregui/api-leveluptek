@@ -29,12 +29,12 @@
                                     <span class="input-group-text"><i class="fas fa-user"></i></span>
                                 </div>
                                 <input
-                                    id="documentNumberSupplier"
+                                    id="documentNumberCustomer"
                                     type="text"
                                     class="form-control"
-                                    placeholder="{{ __('Doc. Proveedor') }}" />
-                                <div class="input-group-append" title="Haga clic para ver el listado de proveedores">
-                                    <button class="btn btn-primary" onclick="getSuppliersForTransactions()"><i class="fas fa-search"></i></button>
+                                    placeholder="{{ __('Doc. Cliente') }}" />
+                                <div class="input-group-append" title="Haga clic para ver el listado de clientes">
+                                    <button class="btn btn-primary" onclick="getCustomersForTransactions()"><i class="fas fa-search"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -43,30 +43,45 @@
                                 <div class="input-group-prepend">
                                     <span class="input-group-text"><i class="fas fa-user"></i></span>
                                 </div>
-                                <input type="hidden" id="idSupplier" value="{{ $purchase->supplier->id }}">
+                                <input type="hidden" id="idCustomer" value="{{ $sale->customer_id }}">
+                                @if ($sale->customer_id !== null)
+                                <input type="hidden" id="documentCustomer" value="{{ $sale->customer->document_number }}">
+                                <input type="hidden" id="nameCustomer" value="{{ $sale->customer->full_name }}">
+                                @endif
                                 <input
-                                    id="businessNameSupplier"
-                                    value="{{ $purchase->supplier->business_name }}"
+                                    id="fullNameCustomer"
                                     type="text"
                                     class="form-control"
-                                    placeholder="{{ __('Nombre Proveedor') }}"
+                                    placeholder="{{ __('Nombre Cliente') }}"
                                     readonly />
-                                <div class="input-group-append" id="btnRemoveSupplier" style="display: none">
+                                <div class="input-group-append" id="btnRemoveCustomer" style="display: none">
                                     <button class="btn btn-primary"><i class="fas fa-trash"></i></button>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-3 offset-lg-9 pl-5 mt-2 total-amount">
+                        <div class="col-lg-3 offset-lg-6 pl-5 mt-2 total-amount">
                             <label for="">
-                                TOTAL: <span id="textTotalAmount">S/. {{ $purchase->total_amount }}</span>
+                                A cuenta:
+                                <input
+                                    type="number"
+                                    id="partialPayment"
+                                    class="form-control ml-2"
+                                    value="{{ $sale->partial_payment }}"
+                                    {{ $sale->type === config('constants.SALE_TYPES.SALE_TYPE_CREDIT') ? '' : 'readonly' }}
+                                    style="width: 110px !important">
+                            </label>
+                        </div>
+                        <div class="col-lg-3 pl-5 mt-2 total-amount">
+                            <label for="">
+                                TOTAL: <span id="textTotalAmount">S/. 0.00</span>
                             </label>
                         </div>
                     </section>
                     <form method="POST" id="formUpdate" enctype="multipart/form-data">
-                        @csrf
-                        @method('PUT')
-                        <input type="hidden" name="purchaseId" value="{{ $purchase->id }}" />
-                        <input type="hidden" id="products" value="{{ $purchase->products }}" />
+                        {{ csrf_field() }}
+                        @method('put')
+                        <input type="hidden" name="saleId" value="{{ $sale->id }}" />
+                        <input type="hidden" id="products" value="{{ $sale->products }}" />
                         <div class="pl-2 pr-2 cart-details">
                             <table class="table table-bordered">
                                 <thead class="table-primary">
@@ -83,37 +98,51 @@
                 </div>
 
                 <div class="summary col-lg-4 row">
-                    <div class="col-lg-12">
+                    <div class="col-lg-6">
                         <div class="input-group form-group">
                             <div class="input-group input-group-alternative">
-                                <div class="input-group-prepend">
+                                <div class="input-group-prepend" title="{{ __('Forma de pago') }}">
                                     <span class="input-group-text"><i class="fas fa-pen-nib"></i></span>
                                 </div>
-                                <input type="file" id="invoice" name="invoice" accept="image/*" class="form-control" />
-                                <div class="input-group-append" id="invoiceImagePreviewContainer">
-                                    <input type="hidden" id="urlPurchaseImage" value="{{ $purchase->path_image }}" />
-                                    <img id="invoiceImagePreview" alt="Vista previa" value="{{ $purchase->path_image }}" />
-                                    <button id="removeInvoiceImagePreview" title="Quitar archivo" class="btn btn-sm btn-primary"><i class="fas fa-trash"></i></button>
-                                </div>
+                                <select class="form-control" name="saleType" id="saleType" onchange="changeSaleType(this.value)" disabled>
+                                    @foreach (config('constants.SALE_TYPES') as $saleType)
+                                    <option value="{{ $saleType }}" {{ $sale->type === $saleType ? 'selected' : '' }}>{{ $saleType }}</option>
+                                    @endforeach
+                                </select>
                             </div>
+                        </div>
+                    </div>
+                    <div class="input-group form-group col-lg-6">
+                        <div class="input-group input-group-alternative">
+                            <div class="input-group-prepend" title="{{ __('Método de pago') }}">
+                                <span class="input-group-text"><i class="fas fa-money-bill"></i></span>
+                            </div>
+                            <select id="paymentMethod" name="paymentMethod" class="form-control">
+                                @foreach (config('constants.PAYMENT_METHODS') as $paymentMethod)
+                                <option value="{{ $paymentMethod }}" {{ $sale->payment_method === $paymentMethod ? 'selected' : '' }}>{{ $paymentMethod }}</option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
                     <div class="col-lg-12 favorites-container">
                         <section class="favorites-container-products" id="containerProductsByCategory">
                             @foreach ($favorites as $product)
-                            <span class="badge badge-pill badge-info p-2" onclick="addProduct({ id: {{ $product->id }}, name: '{{ $product->name }}', quantity: 1 })">{{ $product->name }}</span>
+                            <span
+                                class="badge badge-pill badge-info p-2"
+                                onclick="addProduct({{ json_encode(['id' => $product->id, 'name' => $product->name, 'quantity' => 1, 'prices' => $product->sales_prices, 'price' => $product->sales_prices[0], 'stock' => $product->stock]) }})">{{ $product->name }}
+                            </span>
                             @endforeach
                         </section>
                         <section class="favorites-container-categories">
-                            <span class="badge badge-pill badge-primary p-3" id="spanCategory-0" onclick="getProductsByCategory(0)">{{ __('Favoritos') }}</span>
+                            <span class="badge badge-pill badge-primary p-3 mb-1" id="spanCategory-0" onclick="getProductsByCategory(0)">{{ __('Favoritos') }}</span>
                             @foreach ($categories as $category)
-                            <span class="badge badge-pill badge-dark p-3" id="spanCategory-{{ $category->id}}" onclick="getProductsByCategory({{ $category->id }})">{{ $category->name }}</span>
+                            <span class="badge badge-pill badge-dark p-3 mb-1" id="spanCategory-{{ $category->id}}" onclick="getProductsByCategory({{ $category->id }})">{{ $category->name }}</span>
                             @endforeach
                         </section>
                     </div>
                     <div class="col-lg-12 mt-4">
                         <button type="submit" class="btn btn-primary btn-block" id="btnRegister">
-                            {{ __('Guardar') }}
+                            {{ __('Actualizar') }}
                         </button>
                     </div>
                 </div>
@@ -155,24 +184,24 @@
     </div>
 </div>
 
-<!-- Modal Suppliers -->
+<!-- Modal Customers -->
 <div
     class="modal fade"
-    id="modalSuppliers"
+    id="modalCustomers"
     tabindex="-1"
     role="dialog"
-    aria-labelledby="modalSuppliersLabel"
+    aria-labelledby="modalCustomersLabel"
     aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h3 class="modal-title" id="modalSuppliersLabel">{{ __('Listado de productos') }}</h3>
+                <h3 class="modal-title" id="modalCustomersLabel">{{ __('Listado de productos') }}</h3>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <table id="suppliersTable" class="table align-items-center table-flush">
+                <table id="customersTable" class="table align-items-center table-flush">
                     <thead class="thead-light">
                         <tr>
                             <th scope="col" class="sort" data-sort="name">{{ __('DNI / RUC') }}</th>
@@ -188,6 +217,6 @@
 </div>
 
 @section('js')
-<script src="{{ asset('js/purchase.js') }}"></script>
+<script src="{{ asset('js/sale.js') }}"></script>
 @endsection
 @endsection

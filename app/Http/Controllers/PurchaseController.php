@@ -41,7 +41,7 @@ class PurchaseController extends Controller
         $pageTitle = 'Compras';
         $route = 'purchases';
 
-        $cashSession = CashSession::getOpenCashSessionByUserId(auth()->user()->id);
+        $cashSession = CashSession::getOpenCashSessionByRole();
         $cashSessionId = $cashSession ? $cashSession->id : 0;
 
         return view('pages.purchases.index', compact('pageTitle', 'route', 'cashSessionId'));
@@ -54,7 +54,7 @@ class PurchaseController extends Controller
      */
     public function getData()
     {
-        $cashSession = CashSession::getOpenCashSessionByUserId(auth()->user()->id);
+        $cashSession = CashSession::getOpenCashSessionByRole();
         $query = Purchase::from('purchases as p')
             ->select(
                 'p.id',
@@ -82,7 +82,7 @@ class PurchaseController extends Controller
     {
         $pageTitle = 'Nueva Compra';
         $categories = $this->categoryService->getAll();
-        $favorites = $this->productService->getFavorites();
+        $favorites = $this->productService->getByCategory(0);
 
         return view('pages.purchases.create', compact('pageTitle', 'categories', 'favorites'));
     }
@@ -149,7 +149,7 @@ class PurchaseController extends Controller
         $purchase->path_image = $purchase->url_image ? asset('storage/' . $purchase->url_image) : '';
         $pageTitle = 'Editar Compra';
         $categories = $this->categoryService->getAll();
-        $favorites = $this->productService->getFavorites();
+        $favorites = $this->productService->getByCategory(0);
 
         return view('pages.purchases.edit', compact('purchase', 'pageTitle', 'categories', 'favorites'));
     }

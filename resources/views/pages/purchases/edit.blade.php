@@ -44,9 +44,10 @@
                                     <span class="input-group-text"><i class="fas fa-user"></i></span>
                                 </div>
                                 <input type="hidden" id="idSupplier" value="{{ $purchase->supplier->id }}">
+                                <input type="hidden" id="documentSupplier" value="{{ $purchase->supplier->document_number }}">
+                                <input type="hidden" id="nameSupplier" value="{{ $purchase->supplier->business_name }}">
                                 <input
                                     id="businessNameSupplier"
-                                    value="{{ $purchase->supplier->business_name }}"
                                     type="text"
                                     class="form-control"
                                     placeholder="{{ __('Nombre Proveedor') }}"

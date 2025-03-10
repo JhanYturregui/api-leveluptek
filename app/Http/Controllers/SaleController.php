@@ -6,12 +6,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 use App\Models\CashSession;
+use App\Models\Customer;
 use App\Models\Sale;
 use App\Services\CategoryService;
 use App\Services\ProductService;
+use App\Services\SaleService;
 
 class SaleController extends Controller
 {
+    protected $saleService;
     protected $productService;
     protected $categoryService;
     /**
@@ -19,10 +22,11 @@ class SaleController extends Controller
      *
      * @return void
      */
-    public function __construct(ProductService $productService, CategoryService $categoryService)
+    public function __construct(SaleService $saleService, ProductService $productService, CategoryService $categoryService)
     {
         $this->middleware('auth');
         date_default_timezone_set('America/Lima');
+        $this->saleService = $saleService;
         $this->productService = $productService;
         $this->categoryService = $categoryService;
     }
@@ -37,7 +41,7 @@ class SaleController extends Controller
         $pageTitle = 'Ventas';
         $route = 'sales';
 
-        $cashSession = CashSession::getOpenCashSessionByUserId(auth()->user()->id);
+        $cashSession = CashSession::getOpenCashSessionByRole();
         $cashSessionId = $cashSession ? $cashSession->id : 0;
 
         return view('pages.sales.index', compact('pageTitle', 'route', 'cashSessionId'));
@@ -50,15 +54,15 @@ class SaleController extends Controller
      */
     public function getData()
     {
-        $cashSession = CashSession::getOpenCashSessionByUserId(auth()->user()->id);
+        $cashSession = CashSession::getOpenCashSessionByRole();
         $query = Sale::from('sales as s')
             ->select(
                 's.id',
                 's.total_amount',
                 DB::raw("DATE_FORMAT(s.created_at, '%d-%m-%Y %H:%i:%s') as created_at_formatted"),
-                'c.full_name'
+                'c.full_name as customer_fullname'
             )
-            ->join('customers as c', 's.customer_id', 'c.id')
+            ->leftJoin('customers as c', 's.customer_id', 'c.id')
             ->where('s.cash_session_id', $cashSession->id)
             ->orderBy('s.id', 'desc');
 
@@ -78,8 +82,192 @@ class SaleController extends Controller
     {
         $pageTitle = 'Nueva Venta';
         $categories = $this->categoryService->getAll();
-        $favorites = $this->productService->getFavorites();
+        $favorites = $this->productService->getByCategory(0);
 
         return view('pages.sales.create', compact('pageTitle', 'categories', 'favorites'));
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        $cashSession = CashSession::getOpenCashSessionByUserId(auth()->user()->id);
+        if (!$cashSession) {
+            $response = ['status' => false, 'message' => 'Error al registrar la venta'];
+            return json_encode($response);
+        }
+
+        $saleType = $request->input('saleType');
+        $customerId = $request->input('customerId');
+        $totalAmount = $request->input('totalAmount');
+        $partialPayment = $request->input('partialPayment');
+        if ($saleType === config('constants.SALE_TYPES.SALE_TYPE_CREDIT')) {
+            $customer = Customer::find($customerId);
+            if ($customer->available_balance < ($totalAmount - $partialPayment)) {
+                $response = ['status' => false, 'message' => 'Cliente con saldo insuficiente. Saldo disponible: ' . $customer->available_balance];
+                return json_encode($response);
+            }
+        }
+
+        $data = array();
+        $data['cash_session_id'] = $cashSession->id;
+        $data['customer_id'] = $customerId;
+        $data['total_amount'] = $totalAmount;
+        $data['partial_payment'] = $saleType === config('constants.SALE_TYPES.SALE_TYPE_CREDIT') ? $partialPayment : $totalAmount;
+        $data['type'] = $saleType;
+        $data['payment_method'] = $request->input('paymentMethod');
+        $products = json_decode($request->input('productsList'));
+
+        DB::beginTransaction();
+        try {
+            $sale = Sale::create($data);
+
+            $productsList = [];
+            foreach ($products as $product) {
+                $this->productService->decreaseStock($product->id, $product->quantity);
+                $productsList[$product->id] = ['quantity' => $product->quantity, 'price' => $product->price];
+            }
+            $sale->products()->attach($productsList);
+
+            if ($saleType === config('constants.SALE_TYPES.SALE_TYPE_CREDIT')) {
+                $customer = Customer::find($customerId);
+                $customer->available_balance -= ($totalAmount - $partialPayment);
+                $customer->save();
+            }
+
+            DB::commit();
+
+            $response = [
+                'status' => true,
+                'message' => 'Registro correcto.',
+            ];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $response = ['status' => false, 'message' => $e->getMessage()];
+        }
+
+        return json_encode($response);
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        $sale = $this->saleService->findOne($id);
+        $pageTitle = 'Editar Venta';
+        $categories = $this->categoryService->getAll();
+        $favorites = $this->productService->getByCategory(0);
+
+        return view('pages.sales.edit', compact('sale', 'pageTitle', 'categories', 'favorites'));
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request)
+    {
+        $id = intval($request->input('saleId'));
+        $cashSession = CashSession::getOpenCashSessionByUserId(auth()->user()->id);
+        if (!$cashSession) {
+            $response = ['status' => false, 'message' => 'Error al actualizar la venta'];
+            return json_encode($response);
+        }
+
+        $sale = $this->saleService->findOne($id);
+
+        //$saleType = $request->input('saleType');
+        $customerId = $request->input('customerId');
+        $totalAmount = $request->input('totalAmount');
+        $partialPayment = $request->input('partialPayment');
+        if ($sale->type === config('constants.SALE_TYPES.SALE_TYPE_CREDIT')) {
+            $customer = Customer::find($customerId);
+            $oldDebt = $sale->total_amount - $sale->partial_payment;
+            $available = $customer->available_balance + $oldDebt;
+            if ($available < ($totalAmount - $partialPayment)) {
+                $response = ['status' => false, 'message' => 'Cliente con saldo insuficiente. Saldo disponible: ' . $available];
+                return json_encode($response);
+            }
+        }
+
+        $data = array();
+        $data['cash_session_id'] = $cashSession->id;
+        $data['customer_id'] = $customerId;
+        $data['total_amount'] = $totalAmount;
+        $data['partial_payment'] = $sale->type === config('constants.SALE_TYPES.SALE_TYPE_CREDIT') ? $partialPayment : $totalAmount;
+        //$data['type'] = $saleType;
+        $data['payment_method'] = $request->input('paymentMethod');
+        $products = json_decode($request->input('productsList'));
+
+        DB::beginTransaction();
+        try {
+            $sale = $this->saleService->findOne($id);
+            $sale->update($data);
+
+            $productsList = [];
+            foreach ($products as $product) {
+                $this->productService->decreaseStock($product->id, $product->quantity);
+                $productsList[$product->id] = ['quantity' => $product->quantity, 'price' => $product->price];
+            }
+            $sale->products()->sync($productsList);
+
+            if ($sale->type === config('constants.SALE_TYPES.SALE_TYPE_CREDIT')) {
+                $customer = Customer::find($customerId);
+                $customer->available_balance = $customer->available_balance - $totalAmount + $partialPayment + $oldDebt;
+                $customer->save();
+            }
+
+            DB::commit();
+
+            $response = [
+                'status' => true,
+                'message' => 'Registro correcto.',
+            ];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $response = ['status' => false, 'message' => $e->getMessage()];
+        }
+
+        return json_encode($response);
+    }
+
+    /**
+     * Delete resource
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function delete(Request $request)
+    {
+        $id = $request->input('id');
+        $response = array();
+
+        DB::beginTransaction();
+        try {
+            $sale = $this->saleService->findOne($id);
+
+            foreach ($sale->products as $product) {
+                $this->productService->increaseStock($product->id, $product->pivot->quantity);
+            }
+
+            $sale->delete();
+
+            DB::commit();
+            $response = ['status' => true, 'message' => 'Eliminación correcta.'];
+        } catch (\Exception $e) {
+            DB::rollBack();
+            $response = ['status' => false, 'message' => $e->getMessage()];
+        }
+        return json_encode($response);
     }
 }

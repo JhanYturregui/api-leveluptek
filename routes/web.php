@@ -34,7 +34,8 @@ Route::group(['middleware' => 'auth'], function () {
 	});
 
 	Route::prefix('caja')->group(function () {
-		Route::post('/', [App\Http\Controllers\CashSessionController::class, 'store'])->name('purchases_register');
+		Route::post('/', [App\Http\Controllers\CashSessionController::class, 'store'])->name('cash_session_register');
+		Route::post('/close', [App\Http\Controllers\CashSessionController::class, 'close'])->name('cash_session_close');
 	});
 
 	Route::prefix('compras')->group(function () {
@@ -70,14 +71,24 @@ Route::group(['middleware' => 'auth'], function () {
 	});
 
 	Route::prefix('clientes')->group(function () {
-		/* Route::get('/', [App\Http\Controllers\CustomerController::class, 'index'])->name('customers');
+		Route::get('/', [App\Http\Controllers\CustomerController::class, 'index'])->name('customers');
 		Route::get('/data', [App\Http\Controllers\CustomerController::class, 'getData'])->name('customers_data');
 		Route::get('/crear', [App\Http\Controllers\CustomerController::class, 'create'])->name('customers_create');
 		Route::post('/', [App\Http\Controllers\CustomerController::class, 'store'])->name('customers_register');
 		Route::get('/editar/{id}', [App\Http\Controllers\CustomerController::class, 'edit'])->name('customers_edit');
 		Route::put('/', [App\Http\Controllers\CustomerController::class, 'update'])->name('customers_update');
-		Route::delete('/', [App\Http\Controllers\CustomerController::class, 'delete'])->name('customers_delete'); */
+		Route::delete('/', [App\Http\Controllers\CustomerController::class, 'delete'])->name('customers_delete');
 		Route::get('/obtener', [App\Http\Controllers\CustomerController::class, 'findByDocumentNumber'])->name('customers_find_by_document_number');
 		Route::get('/transacciones', [App\Http\Controllers\CustomerController::class, 'getCustomersForTransactions'])->name('customers_data_transactions');
+	});
+
+	Route::prefix('movimientos')->group(function () {
+		Route::get('/', [App\Http\Controllers\CashTransactionController::class, 'index'])->name('cash_transactions');
+		Route::get('/data', [App\Http\Controllers\CashTransactionController::class, 'getData'])->name('cash_transactions_data');
+		Route::get('/crear', [App\Http\Controllers\CashTransactionController::class, 'create'])->middleware('check.cash.session')->name('cash_transactions_create');
+		Route::post('/', [App\Http\Controllers\CashTransactionController::class, 'store'])->middleware('check.cash.session')->name('cash_transactions_register');
+		Route::get('/editar/{id}', [App\Http\Controllers\CashTransactionController::class, 'edit'])->middleware('check.cash.session')->name('cash_transactions_edit');
+		Route::put('/', [App\Http\Controllers\CashTransactionController::class, 'update'])->middleware('check.cash.session')->name('cash_transactions_update');
+		Route::delete('/', [App\Http\Controllers\CashTransactionController::class, 'delete'])->middleware('check.cash.session')->name('cash_transactions_delete');
 	});
 });

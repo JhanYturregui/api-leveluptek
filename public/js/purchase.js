@@ -39,7 +39,6 @@ function getProducts() {
 function getPurchaseImage() {
     if (IS_UPDATE) {
       let urlPurchaseImage = $('#urlPurchaseImage').val();
-      console.log(urlPurchaseImage);
       if (urlPurchaseImage) {
         imagePreview.src = urlPurchaseImage;
         imagePreviewContainer.style.display = 'block';
@@ -50,18 +49,29 @@ function getPurchaseImage() {
     } 
 }
 
+function getSupplier() {
+    if ($('#idSupplier').val()) {
+        addSupplier({
+            id: $('#idSupplier').val(), 
+            documentNumber: $('#documentSupplier').val(), 
+            businessName: $('#nameSupplier').val()
+        });
+    }
+}
+
 window.onload = function() {
-  if (CASH_SESSION_ID === 0) {
-    $('#modalRegisterCashSession').modal();
-    $('#openingAmount').focus();
-    return;
-  }
-  $('#productCode').focus();
-  origin = window.location.origin;
-  scrollX = window.screen.width <= 1240 ? true : false;
-  initDatatable(MAIN_DATATABLE_PARAMS);
-  getProducts();
-  getPurchaseImage();
+    if (CASH_SESSION_ID === 0) {
+        $('#modalRegisterCashSession').modal();
+        $('#openingAmount').focus();
+        return;
+    }
+    $('#productCode').focus();
+    origin = window.location.origin;
+    scrollX = window.screen.width <= 1240 ? true : false;
+    initDatatable(MAIN_DATATABLE_PARAMS);
+    getProducts();
+    getPurchaseImage();
+    getSupplier();
 }
 
 window.onresize = function () {
@@ -291,14 +301,22 @@ function getProductByCode(code) {
 $('#formRegister').on('submit', function (event) {
     event.preventDefault();
 
+    const supplierId = $('#idSupplier').val();
+
     if (productsList.length === 0) {
         showAlert('Error!', 'Debe agregar al menos un producto', 'error', 'Ok', 'codeProduct');
+        return;
+    }
+
+
+    if (parseInt(supplierId) === 0 || !supplierId) { 
+        showAlert('Error!', 'Debe elegir un proveedor', 'error', 'Ok', 'documentNumberSupplier');
         return;
     }
     
     const products = productsList.map(({id, quantity, price}) => ({id, quantity, price}));
     const data = new FormData(this);
-    data.append('supplierId', $('#idSupplier').val());
+    data.append('supplierId', supplierId);
     data.append('productsList', JSON.stringify(products));
     data.append('totalAmount', totalAmount);
 

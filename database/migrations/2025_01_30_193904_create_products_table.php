@@ -16,7 +16,7 @@ class CreateProductsTable extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->foreignId(('category_id'))->constrained()->cascadeOnUpdate()->restrictOnDelete();
-            $table->string('code', 30);
+            $table->string('code', 30)->unique();
             $table->string('name');
             $table->enum('unit', [config('constants.MEASURE_UNIT_UNIT')])->default(config(('constants.MEASURE_UNIT_UNIT')));
             $table->integer('stock')->default(0);

@@ -16,8 +16,32 @@ class CashSession extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function sales()
+    {
+        return $this->hasMany(Sale::class);
+    }
+
+    public function purchases()
+    {
+        return $this->hasMany(Purchase::class);
+    }
+
+    public function cash_transactions()
+    {
+        return $this->hasMany(CashTransaction::class);
+    }
+
     public static function getOpenCashSessionByUserId($userId)
     {
-        return self::where('user_id', $userId)->where('date', date('Y-m-d'))->where('open', true)->first();
+        return self::where('user_id', $userId)->where('date', date('Y-m-d'))->where('open', true)->orderBy('id', 'desc')->first();
+    }
+
+    public static function getOpenCashSessionByRole()
+    {
+        if (auth()->user()->role === config('constants.USER_ROLE_SELLER')) {
+            return self::where('user_id', auth()->user()->id)->where('date', date('Y-m-d'))->where('open', true)->orderBy('id', 'desc')->first();
+        } else {
+            return self::where('date', date('Y-m-d'))->where('open', true)->orderBy('id', 'desc')->first();
+        }
     }
 }

@@ -18,6 +18,7 @@ class CreateCustomersTable extends Migration
             $table->string('document_number', 11);
             $table->string('full_name', 100);
             $table->decimal('credit_limit', 8, 2)->default(0);
+            $table->decimal('available_balance', 8, 2)->default(0);
             $table->boolean('active')->default(true);
             $table->timestamps();
         });

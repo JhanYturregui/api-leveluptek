@@ -45,25 +45,30 @@ function register() {
   const code = $('#code').val();
   const name = $('#name').val();
   const category = $('#category').val();
-  const favorite = $('#favorite').is(':checked');
+  const favorite = $('#favorite').is(':checked') ? 1 : 0;
 
   if (!code || code.length === 0) {
-    showAlert('Error!', 'Campo requerido', 'error', 'Ok', 'code');
-    return;
+      showAlert('Error!', 'Campo requerido', 'error', 'Ok', 'code');
+      return;
   }
 
   if (!name || name.length === 0) {
-    showAlert('Error!', 'Campo requerido', 'error', 'Ok', 'name');
-    return;
+      showAlert('Error!', 'Campo requerido', 'error', 'Ok', 'name');
+      return;
+  }
+
+  if (pricesList.length === 0) {
+      showAlert('Error!', 'Debe agregar al menos un precio', 'error', 'Ok', 'price');
+      return;
   }
 
   const data = {
-    name,
-    code,
-    category,
-    favorite,
-    pricesList,
-    _token: $('input[name=_token]').val(),
+      name,
+      code,
+      category,
+      favorite,
+      pricesList,
+      _token: $('input[name=_token]').val(),
   };
 
   $.ajax({
@@ -86,49 +91,54 @@ function register() {
 }
 
 function update() {
-  const id = $('#idData').val();
-  const code = $('#code').val();
-  const name = $('#name').val();
-  const category = $('#category').val();
-  const favorite = $('#favorite').is(':checked');
+    const id = $('#idData').val();
+    const code = $('#code').val();
+    const name = $('#name').val();
+    const category = $('#category').val();
+    const favorite = $('#favorite').is(':checked') ? 1 : 0;
 
-  if (!code || code.length === 0) {
-    showAlert('Error!', 'Campo requerido', 'error', 'Ok', 'code');
-    return;
-  }
-
-  if (!name || name.length === 0) {
-    showAlert('Error!', 'Campo requerido', 'error', 'Ok', 'name');
-    return;
-  }
-
-  const data = {
-    id,
-    name,
-    code,
-    category,
-    favorite,
-    pricesList,
-    _token: $('input[name=_token]').val(),
-  };
-
-  $.ajax({
-    type: 'put',
-    url: `../../${ROUTE_MODULE}`,
-    dataType: 'json',
-    data,
-    success: function(a){
-      if (a.status) {
-        location.replace(origin + `/${ROUTE_MODULE}`);
-
-      }else {
-        Swal.fire('Error!', a.message, 'error');
-      }
-    },
-    error: function(e) {
-      Swal.fire('Error!', e.message, 'error');
+    if (!code || code.length === 0) {
+        showAlert('Error!', 'Campo requerido', 'error', 'Ok', 'code');
+        return;
     }
-  });
+
+    if (!name || name.length === 0) {
+        showAlert('Error!', 'Campo requerido', 'error', 'Ok', 'name');
+        return;
+    }
+
+    if (pricesList.length === 0) {
+        showAlert('Error!', 'Debe agregar al menos un precio', 'error', 'Ok', 'price');
+        return;
+    }
+
+    const data = {
+        id,
+        name,
+        code,
+        category,
+        favorite,
+        pricesList,
+        _token: $('input[name=_token]').val(),
+    };
+
+    $.ajax({
+        type: 'put',
+        url: `../../${ROUTE_MODULE}`,
+        dataType: 'json',
+        data,
+        success: function(a){
+        if (a.status) {
+            location.replace(origin + `/${ROUTE_MODULE}`);
+
+        }else {
+            Swal.fire('Error!', a.message, 'error');
+        }
+        },
+        error: function(e) {
+            Swal.fire('Error!', e.message, 'error');
+        }
+    });
 }
 
 function modDelete(id) {

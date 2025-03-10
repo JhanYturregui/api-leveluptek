@@ -104,6 +104,18 @@
                                     {{ __('Productos') }}
                                 </a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('suppliers') }}">
+                                    <i class="fas fa-list"></i>
+                                    {{ __('Proveedores') }}
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('customers') }}">
+                                    <i class="fas fa-list"></i>
+                                    {{ __('Clientes') }}
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </li>
@@ -132,6 +144,12 @@
                                 <a class="nav-link" href="{{ route('sales') }}">
                                     <i class="fas fa-list"></i>
                                     {{ __('Ventas') }}
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('cash_transactions') }}">
+                                    <i class="fas fa-list"></i>
+                                    {{ __('Movimientos de Caja') }}
                                 </a>
                             </li>
                         </ul>

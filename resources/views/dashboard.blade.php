@@ -1,343 +1,165 @@
 @extends('layouts.app')
 
+<style>
+    .balance {
+        background: #cfd8dc;
+    }
+</style>
+
 @section('content')
-  <input type="hidden" id="hasCashSession" value="{{ auth()->user()->has_cash_session }}" />
-  <div class="row pt-2">
+<input type="hidden" id="hasCashSession" value="{{ auth()->user()->has_cash_session }}" />
+
+@if ($cashSessionId > 0)
+<div class="row mt-5">
     <div class="col-xl-8 mb-5 mb-xl-0">
-      <div class="card bg-gradient-default shadow">
-        <div class="card-header bg-transparent">
-          <div class="row align-items-center">
-            <div class="col">
-              <h6 class="text-uppercase text-light ls-1 mb-1">Overview</h6>
-              <h2 class="text-white mb-0">Sales value</h2>
+        <div class="card shadow">
+            <div class="card-header border-0">
+                <div class="row align-items-center">
+                    <div class="col-6">
+                        <h3 class="mb-0">Balance del día</h3>
+                    </div>
+                    @if (auth()->user()->role === config('constants.USER_ROLE_ADMIN'))
+                    <div class="col-6 text-right">
+                        <h4 class="mb-0">Vendedor: <span>{{ $cashSessionUser->name }}</span></h4>
+                    </div>
+                    @endif
+                </div>
             </div>
-            <div class="col">
-              <ul class="nav nav-pills justify-content-end">
-                <li
-                  class="nav-item mr-2 mr-md-0"
-                  data-toggle="chart"
-                  data-target="#chart-sales"
-                  data-update='{"data":{"datasets":[{"data":[0, 20, 10, 30, 15, 40, 20, 60, 60]}]}}'
-                  data-prefix="$"
-                  data-suffix="k"
-                >
-                  <a href="#" class="nav-link py-2 px-3 active" data-toggle="tab">
-                    <span class="d-none d-md-block">Month</span>
-                    <span class="d-md-none">M</span>
-                  </a>
-                </li>
-                <li
-                  class="nav-item"
-                  data-toggle="chart"
-                  data-target="#chart-sales"
-                  data-update='{"data":{"datasets":[{"data":[0, 20, 5, 25, 10, 30, 15, 40, 40]}]}}'
-                  data-prefix="$"
-                  data-suffix="k"
-                >
-                  <a href="#" class="nav-link py-2 px-3" data-toggle="tab">
-                    <span class="d-none d-md-block">Week</span>
-                    <span class="d-md-none">W</span>
-                  </a>
-                </li>
-              </ul>
+            <div class="table-responsive">
+                <!-- Projects table -->
+                <table class="table align-items-center table-flush">
+                    <thead class="thead-light">
+                        <tr>
+                            <th scope="col">Tipo</th>
+                            <th scope="col">Cantidad</th>
+                            <th scope="col">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($cashSessionData as $key => $data)
+                        @if ($key == 'balance')
+                        <tr class="balance">
+                            <th scope="row"></th>
+                            <td>{{ $data['title'] }}</td>
+                            <td>
+                                <i class="{{ $data['icon'] }}"></i>
+                                {{ $data['total'] }}
+                            </td>
+                        </tr>
+                        @else
+                        <tr>
+                            <th scope="row">{{ $data['title'] }}</th>
+                            <td>{{ $data['count'] }}</td>
+                            <td>
+                                <i class="{{ $data['icon'] }}"></i>
+                                {{ $data['total'] }}
+                            </td>
+                        </tr>
+                        @endif
+                        @endforeach
+
+                        <tr>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-          </div>
         </div>
-        <div class="card-body">
-          <!-- Chart -->
-          <div class="chart">
-            <!-- Chart wrapper -->
-            <canvas id="chart-sales" class="chart-canvas"></canvas>
-          </div>
-        </div>
-      </div>
     </div>
     <div class="col-xl-4">
-      <div class="card shadow">
-        <div class="card-header bg-transparent">
-          <div class="row align-items-center">
-            <div class="col">
-              {{-- <h6 class="text-uppercase text-muted ls-1 mb-1">Performance</h6> --}}
-              <h2 class="mb-0">{{ __('Locales') }}</h2>
+        <div class="card shadow">
+            <div class="card-header border-0">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h3 class="mb-0">Cierre de caja (Efectivo)</h3>
+                    </div>
+                    @if (auth()->user()->id === $cashSessionUser->id)
+                    <div class="col text-right">
+                        <button class="btn btn-sm btn-primary" onclick="modalCloseCashSession()">Cerrar Caja</button>
+                    </div>
+                    @endif
+                </div>
             </div>
-          </div>
+            <div class="table-responsive">
+                <!-- Projects table -->
+                <table class="table align-items-center table-flush">
+                    <thead class="thead-light">
+                        <tr>
+                            <th scope="col">Tipo</th>
+                            <th scope="col">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($cashSessionInRegisterData as $key => $data)
+                        <tr class="{{ $key === 'balance' ? 'balance' : '' }}">
+                            @if ($key === 'balance')
+                            <input type="hidden" id="totalInRegiser" value="{{ $data['total'] }}">
+                            @endif
+                            <th scope="row">{{ $data['title'] }}</th>
+                            <td><i class="{{ $data['icon'] }}"></i>{{ $data['total'] }}</td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
-        <div class="card-body">
-          <select id="locales" class="form form-control">
-            <option value="1">Local 1</option>
-            <option value="2">Local 2</option>
-            <option value="3">Local 3</option>
-          </select>
+    </div>
+</div>
+@else
+<div class="row pt-2">
+    <div class="col-xl-4 offset-xl-4">
+        <div class="card shadow">
+            <div class="card-header bg-transparent">
+                <div class="row align-items-center">
+                    <div class="col">
+                        {{-- <h6 class="text-uppercase text-muted ls-1 mb-1">Performance</h6> --}}
+                        <h2 class="mb-0">{{ __('Caja') }}</h2>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <p style="font-weight: 500; font-size: 0.9em">Aperture caja para poder realizar transacciones y ver
+                    resumen del día</p>
+            </div>
+            <div class="card-footer">
+                <a href="{{ route('sales') }}" class="btn btn-primary">Aperturar caja</a>
+            </div>
         </div>
-      </div>
+    </div>
+</div>
+@endif
 
-      <div class="card shadow mt-2">
-        <div class="card-header bg-transparent">
-          <div class="row align-items-center">
-            <div class="col">
-              {{-- <h6 class="text-uppercase text-muted ls-1 mb-1">Performance</h6> --}}
-              <h2 class="mb-0">{{ __('Tipo de cambio') }}</h2>
-            </div>
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="input-group">
-            <div class="input-group-prepend">
-              <span class="input-group-text">S/</span>
-            </div>
-            <input type="number" id="tipoCambio" class="form form-control" value="3.72" />
-            <div class="input-group-append">
-              <button class="btn btn-primary"><i class="fas fa-plus"></i></button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="row mt-5">
-    <div class="col-xl-8 mb-5 mb-xl-0">
-      <div class="card shadow">
-        <div class="card-header border-0">
-          <div class="row align-items-center">
-            <div class="col">
-              <h3 class="mb-0">Page visits</h3>
-            </div>
-            <div class="col text-right">
-              <a href="#!" class="btn btn-sm btn-primary">See all</a>
-            </div>
-          </div>
-        </div>
-        <div class="table-responsive">
-          <!-- Projects table -->
-          <table class="table align-items-center table-flush">
-            <thead class="thead-light">
-              <tr>
-                <th scope="col">Page name</th>
-                <th scope="col">Visitors</th>
-                <th scope="col">Unique users</th>
-                <th scope="col">Bounce rate</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th scope="row">/argon/</th>
-                <td>4,569</td>
-                <td>340</td>
-                <td>
-                  <i class="fas fa-arrow-up text-success mr-3"></i>
-                  46,53%
-                </td>
-              </tr>
-              <tr>
-                <th scope="row">/argon/index.html</th>
-                <td>3,985</td>
-                <td>319</td>
-                <td>
-                  <i class="fas fa-arrow-down text-warning mr-3"></i>
-                  46,53%
-                </td>
-              </tr>
-              <tr>
-                <th scope="row">/argon/charts.html</th>
-                <td>3,513</td>
-                <td>294</td>
-                <td>
-                  <i class="fas fa-arrow-down text-warning mr-3"></i>
-                  36,49%
-                </td>
-              </tr>
-              <tr>
-                <th scope="row">/argon/tables.html</th>
-                <td>2,050</td>
-                <td>147</td>
-                <td>
-                  <i class="fas fa-arrow-up text-success mr-3"></i>
-                  50,87%
-                </td>
-              </tr>
-              <tr>
-                <th scope="row">/argon/profile.html</th>
-                <td>1,795</td>
-                <td>190</td>
-                <td>
-                  <i class="fas fa-arrow-down text-danger mr-3"></i>
-                  46,53%
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-    <div class="col-xl-4">
-      <div class="card shadow">
-        <div class="card-header border-0">
-          <div class="row align-items-center">
-            <div class="col">
-              <h3 class="mb-0">Social traffic</h3>
-            </div>
-            <div class="col text-right">
-              <a href="#!" class="btn btn-sm btn-primary">See all</a>
-            </div>
-          </div>
-        </div>
-        <div class="table-responsive">
-          <!-- Projects table -->
-          <table class="table align-items-center table-flush">
-            <thead class="thead-light">
-              <tr>
-                <th scope="col">Referral</th>
-                <th scope="col">Visitors</th>
-                <th scope="col"></th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <th scope="row">Facebook</th>
-                <td>1,480</td>
-                <td>
-                  <div class="d-flex align-items-center">
-                    <span class="mr-2">60%</span>
-                    <div>
-                      <div class="progress">
-                        <div
-                          class="progress-bar bg-gradient-danger"
-                          role="progressbar"
-                          aria-valuenow="60"
-                          aria-valuemin="0"
-                          aria-valuemax="100"
-                          style="width: 60%"
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <th scope="row">Facebook</th>
-                <td>5,480</td>
-                <td>
-                  <div class="d-flex align-items-center">
-                    <span class="mr-2">70%</span>
-                    <div>
-                      <div class="progress">
-                        <div
-                          class="progress-bar bg-gradient-success"
-                          role="progressbar"
-                          aria-valuenow="70"
-                          aria-valuemin="0"
-                          aria-valuemax="100"
-                          style="width: 70%"
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <th scope="row">Google</th>
-                <td>4,807</td>
-                <td>
-                  <div class="d-flex align-items-center">
-                    <span class="mr-2">80%</span>
-                    <div>
-                      <div class="progress">
-                        <div
-                          class="progress-bar bg-gradient-primary"
-                          role="progressbar"
-                          aria-valuenow="80"
-                          aria-valuemin="0"
-                          aria-valuemax="100"
-                          style="width: 80%"
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <th scope="row">Instagram</th>
-                <td>3,678</td>
-                <td>
-                  <div class="d-flex align-items-center">
-                    <span class="mr-2">75%</span>
-                    <div>
-                      <div class="progress">
-                        <div
-                          class="progress-bar bg-gradient-info"
-                          role="progressbar"
-                          aria-valuenow="75"
-                          aria-valuemin="0"
-                          aria-valuemax="100"
-                          style="width: 75%"
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-              <tr>
-                <th scope="row">twitter</th>
-                <td>2,645</td>
-                <td>
-                  <div class="d-flex align-items-center">
-                    <span class="mr-2">30%</span>
-                    <div>
-                      <div class="progress">
-                        <div
-                          class="progress-bar bg-gradient-warning"
-                          role="progressbar"
-                          aria-valuenow="30"
-                          aria-valuemin="0"
-                          aria-valuemax="100"
-                          style="width: 30%"
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal Delete -->
-  <div
-    class="modal fade"
-    id="modalCashSession"
-    data-backdrop="static"
-    tabindex="-1"
-    role="dialog"
-    aria-labelledby="modalCashSessionLabel"
-    aria-hidden="true"
-  >
+<!-- Modal Close Cash Session -->
+<div class="modal fade" id="modalCloseCashSession" tabindex="-1" role="dialog"
+    aria-labelledby="modalCloseCashSessionLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3 class="modal-title" id="modalCashSessionLabel">{{ __('Eliminar') }}</h3>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalDeleteLabel">{{ __('Cerrar caja') }}</h3>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>{{ __('¿Deseas cerrar caja?') }}</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="closeCashSession()">{{ __('Confirmar')
+                    }}</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('Cancelar') }}</button>
+            </div>
         </div>
-        <div class="modal-body">
-          <input type="hidden" id="idDataDelete" value="" />
-          <p>{{ __('¿Deseas eliminar esta categoría?') }}</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal">{{ __('Cancelar') }}</button>
-          <button type="button" class="btn btn-primary" onclick="remove()">{{ __('Confirmar') }}</button>
-        </div>
-      </div>
     </div>
-  </div>
+</div>
 
-  @include('layouts.footers.auth')
+@section('js')
+<script src="{{ asset('js/dashboard.js') }}"></script>
+@endsection
+
+@include('layouts.footers.auth')
 @endsection
 
 @push('js')
-  <script src="{{ asset('argon') }}/vendor/chart.js/dist/Chart.min.js"></script>
-  <script src="{{ asset('argon') }}/vendor/chart.js/dist/Chart.extension.js"></script>
+<script src="{{ asset('argon') }}/vendor/chart.js/dist/Chart.min.js"></script>
+<script src="{{ asset('argon') }}/vendor/chart.js/dist/Chart.extension.js"></script>
 @endpush

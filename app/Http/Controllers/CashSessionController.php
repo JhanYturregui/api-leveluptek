@@ -46,4 +46,33 @@ class CashSessionController extends Controller
 
         return json_encode($response);
     }
+
+    /**
+     * Close cash session from one user.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function close(Request $request)
+    {
+        $data = array();
+        $data['closing_amount'] = $request->input('totalInRegiser');
+        $data['real_closing_amount'] = $request->input('totalInRegiser');
+        $data['open'] = 0;
+
+
+        try {
+            $cashSession = CashSession::getOpenCashSessionByRole();
+            $cashSession->update($data);
+
+            $response = [
+                'status' => true,
+                'message' => 'Cierre correcto.',
+            ];
+        } catch (\Exception $e) {
+            $response = ['status' => false, 'message' => $e->getMessage()];
+        }
+
+        return json_encode($response);
+    }
 }
