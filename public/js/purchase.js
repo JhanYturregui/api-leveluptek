@@ -29,7 +29,7 @@ function getProducts() {
   if (IS_UPDATE) {
     let products = JSON.parse($('#products').val());
     productsList = products.map(product => {
-      return { id: product.id, name: product.name, quantity: product.pivot.quantity, price: product.pivot.price}
+      return { id: product.id, name: product.name, quantity: product.pivot.quantity, price: product.pivot.price, hasContainer: product.has_container };
     })
     fillShoppingCart();
     calculateTotalAmount();
@@ -308,13 +308,12 @@ $('#formRegister').on('submit', function (event) {
         return;
     }
 
-
     if (parseInt(supplierId) === 0 || !supplierId) { 
         showAlert('Error!', 'Debe elegir un proveedor', 'error', 'Ok', 'documentNumberSupplier');
         return;
     }
     
-    const products = productsList.map(({id, quantity, price}) => ({id, quantity, price}));
+    const products = productsList.map(({id, quantity, price, hasContainer}) => ({id, quantity, price, hasContainer}));
     const data = new FormData(this);
     data.append('supplierId', supplierId);
     data.append('productsList', JSON.stringify(products));
@@ -351,7 +350,7 @@ $('#formUpdate').on('submit', function (event) {
         return;
     }
     
-    const products = productsList.map(({id, quantity, price}) => ({id, quantity, price}));
+    const products = productsList.map(({id, quantity, price, hasContainer}) => ({id, quantity, price, hasContainer}));
     const data = new FormData(this);
     data.append('supplierId', $('#idSupplier').val());
     data.append('productsList', JSON.stringify(products));

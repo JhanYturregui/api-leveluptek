@@ -22,6 +22,8 @@ class CreateSalesTable extends Migration
             $table->decimal('partial_payment', 10, 2);
             $table->enum('type', config('constants.SALE_TYPES'))->default(config('constants.SALE_TYPES.SALE_TYPE_CASH'));
             $table->enum('payment_method', config('constants.PAYMENT_METHODS'))->default(config('constants.PAYMENT_METHODS.PAYMENT_METHOD_CASH'));
+            $table->boolean('bring_container')->default(false);
+            $table->integer('total_count_containers')->default(0);
             $table->boolean('canceled')->default(false);
             $table->timestamps();
         });

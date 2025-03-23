@@ -46,6 +46,7 @@ function register() {
   const name = $('#name').val();
   const category = $('#category').val();
   const favorite = $('#favorite').is(':checked') ? 1 : 0;
+  const hasContainer = $('#hasContainer').is(':checked') ? 1 : 0;
 
   if (!code || code.length === 0) {
       showAlert('Error!', 'Campo requerido', 'error', 'Ok', 'code');
@@ -67,6 +68,7 @@ function register() {
       code,
       category,
       favorite,
+      hasContainer,
       pricesList,
       _token: $('input[name=_token]').val(),
   };
@@ -96,6 +98,7 @@ function update() {
     const name = $('#name').val();
     const category = $('#category').val();
     const favorite = $('#favorite').is(':checked') ? 1 : 0;
+    const hasContainer = $('#hasContainer').is(':checked') ? 1 : 0;
 
     if (!code || code.length === 0) {
         showAlert('Error!', 'Campo requerido', 'error', 'Ok', 'code');
@@ -118,6 +121,7 @@ function update() {
         code,
         category,
         favorite,
+        hasContainer,
         pricesList,
         _token: $('input[name=_token]').val(),
     };
@@ -176,6 +180,7 @@ $('#price').on('keyup', function(e) {
 
 function addPrice() {
   const price = parseFloat($('#price').val());
+  if (!price) return;
   const exists = pricesList.find(pr => pr === price);
   if ( !exists ) {
     pricesList.push(price);

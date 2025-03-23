@@ -14,12 +14,8 @@
                         <div class="input-group-prepend">
                             <span class="input-group-text"><i class="fas fa-pen-nib"></i></span>
                         </div>
-                        <input
-                            id="code"
-                            type="text"
-                            class="form-control"
-                            placeholder="{{ __('Código') }}"
-                            value="{{ $product->code }}" />
+                        <input id="code" type="text" class="form-control" placeholder="{{ __('Código') }}"
+                            value="{{ $product->code }}" {{ $product->parent_id ? 'readonly' : '' }} />
                     </div>
                 </div>
                 <div class="input-group form-group col-lg-8">
@@ -27,12 +23,8 @@
                         <div class="input-group-prepend">
                             <span class="input-group-text"><i class="fas fa-pen-nib"></i></span>
                         </div>
-                        <input
-                            id="name"
-                            type="text"
-                            class="form-control"
-                            placeholder="{{ __('Nombre') }}"
-                            value="{{ $product->name }}" />
+                        <input id="name" type="text" class="form-control" placeholder="{{ __('Nombre') }}"
+                            value="{{ $product->name }}" {{ $product->parent_id ? 'readonly' : '' }} />
                     </div>
                 </div>
                 <div class="input-group form-group col-lg-4">
@@ -40,9 +32,10 @@
                         <div class="input-group-prepend">
                             <span class="input-group-text"><i class="fas fa-pen-nib"></i></span>
                         </div>
-                        <select id="category" class="form-control">
+                        <select id="category" class="form-control" {{ $product->parent_id ? 'disabled' : '' }}>
                             @foreach ($categories as $category)
-                            <option value="{{ $category->id }}" {{ $category->id === $product->category_id ? 'selected' : '' }}>
+                            <option value="{{ $category->id }}" {{ $category->id === $product->category_id ? 'selected'
+                                : '' }}>
                                 {{ $category->name }}
                             </option>
                             @endforeach
@@ -62,16 +55,23 @@
                         </div>
                     </div>
                 </div>
+                @if (!$product->parent_id)
                 <div class="input-group form-group col-lg-2 mt-2">
-                    <div class="custom-control custom-checkbox col-lg-4">
-                        <input
-                            class="custom-control-input"
-                            id="favorite"
-                            type="checkbox"
-                            {{ $product->favorite ? 'checked' : '' }} />
+                    <div class="custom-control custom-checkbox">
+                        <input class="custom-control-input" id="favorite" type="checkbox" {{ $product->favorite ?
+                        'checked' : '' }} />
                         <label class="custom-control-label" for="favorite">Favorito</label>
                     </div>
                 </div>
+                <div class="input-group form-group col-lg-2 mt-2">
+                    <div class="custom-control custom-checkbox">
+                        <input class="custom-control-input" id="hasContainer" type="checkbox" {{ $product->has_container
+                        ?
+                        'checked' : '' }} />
+                        <label class="custom-control-label" for="hasContainer">Envase</label>
+                    </div>
+                </div>
+                @endif
 
                 {{-- PRECIOS --}}
                 <div class="card col-lg-4 offset-lg-4 mt-4">

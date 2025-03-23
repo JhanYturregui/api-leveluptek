@@ -49,9 +49,15 @@
                     </div>
                 </div>
                 <div class="input-group form-group col-lg-2 mt-2">
-                    <div class="custom-control custom-checkbox col-lg-4">
+                    <div class="custom-control custom-checkbox">
                         <input class="custom-control-input" id="favorite" type="checkbox" />
                         <label class="custom-control-label" for="favorite">Favorito</label>
+                    </div>
+                </div>
+                <div class="input-group form-group col-lg-2 mt-2">
+                    <div class="custom-control custom-checkbox">
+                        <input class="custom-control-input" id="hasContainer" type="checkbox" />
+                        <label class="custom-control-label" for="hasContainer">Con Envase</label>
                     </div>
                 </div>
 

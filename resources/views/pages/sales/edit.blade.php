@@ -17,9 +17,11 @@
                                 <div class="input-group-prepend">
                                     <span class="input-group-text"><i class="fas fa-barcode"></i></span>
                                 </div>
-                                <input id="productCode" type="text" class="form-control" placeholder="{{ __('Código producto') }}" />
+                                <input id="productCode" type="text" class="form-control"
+                                    placeholder="{{ __('Código producto') }}" />
                                 <div class="input-group-append" title="Haga clic para ver el listado de productos">
-                                    <button class="btn btn-primary" onclick="getProductsForTransactions()"><i class="fas fa-search"></i></button>
+                                    <button class="btn btn-primary" onclick="getProductsForTransactions()"><i
+                                            class="fas fa-search"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -28,13 +30,11 @@
                                 <div class="input-group-prepend">
                                     <span class="input-group-text"><i class="fas fa-user"></i></span>
                                 </div>
-                                <input
-                                    id="documentNumberCustomer"
-                                    type="text"
-                                    class="form-control"
+                                <input id="documentNumberCustomer" type="text" class="form-control"
                                     placeholder="{{ __('Doc. Cliente') }}" />
                                 <div class="input-group-append" title="Haga clic para ver el listado de clientes">
-                                    <button class="btn btn-primary" onclick="getCustomersForTransactions()"><i class="fas fa-search"></i></button>
+                                    <button class="btn btn-primary" onclick="getCustomersForTransactions()"><i
+                                            class="fas fa-search"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -45,35 +45,41 @@
                                 </div>
                                 <input type="hidden" id="idCustomer" value="{{ $sale->customer_id }}">
                                 @if ($sale->customer_id !== null)
-                                <input type="hidden" id="documentCustomer" value="{{ $sale->customer->document_number }}">
+                                <input type="hidden" id="documentCustomer"
+                                    value="{{ $sale->customer->document_number }}">
                                 <input type="hidden" id="nameCustomer" value="{{ $sale->customer->full_name }}">
                                 @endif
-                                <input
-                                    id="fullNameCustomer"
-                                    type="text"
-                                    class="form-control"
-                                    placeholder="{{ __('Nombre Cliente') }}"
-                                    readonly />
+                                <input id="fullNameCustomer" type="text" class="form-control"
+                                    placeholder="{{ __('Nombre Cliente') }}" readonly />
                                 <div class="input-group-append" id="btnRemoveCustomer" style="display: none">
                                     <button class="btn btn-primary"><i class="fas fa-trash"></i></button>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-lg-3 offset-lg-6 pl-5 mt-2 total-amount">
+                        <div class="col-lg-3 offset-lg-5 pl-5 mt-2 total-amount">
                             <label for="">
                                 A cuenta:
-                                <input
-                                    type="number"
-                                    id="partialPayment"
-                                    class="form-control ml-2"
-                                    value="{{ $sale->partial_payment }}"
-                                    {{ $sale->type === config('constants.SALE_TYPES.SALE_TYPE_CREDIT') ? '' : 'readonly' }}
-                                    style="width: 110px !important">
+                                <input type="number" id="partialPayment" class="form-control ml-2"
+                                    value="{{ $sale->partial_payment }}" {{ $sale->type ===
+                                config('constants.SALE_TYPES.SALE_TYPE_CREDIT') ? '' : 'readonly' }}
+                                style="width: 110px !important">
                             </label>
+                            <div class="custom-control custom-checkbox" style="visibility: hidden;" id="divContainer">
+                                <input class="custom-control-input" id="bringContainer" type="checkbox" {{
+                                    $sale->bring_container ? 'checked' : '' }} />
+                                <label class="custom-control-label" for="bringContainer">Trae envase</label>
+                            </div>
                         </div>
-                        <div class="col-lg-3 pl-5 mt-2 total-amount">
-                            <label for="">
-                                TOTAL: <span id="textTotalAmount">S/. 0.00</span>
+                        <div class="col-lg-4 pr-5 mt-2 total-amount">
+                            <label style="float: right">
+                                TOTAL VENTA: <span id="textTotalAmount">S/. 0.00</span>
+                            </label>
+                            <label style="font-size: 0.8em; float: right; visibility: hidden" id="labelTotalContainers">
+                                TOTAL POR ENVASES: <span id="textTotalContainers">S/. 0.00</span>
+                            </label>
+                            <label style="font-size: 0.8em; float: right; visibility: hidden"
+                                id="labelTotalWithContainers">
+                                TOTAL CON ENVASES: <span id="textTotalWithContainers">S/. 0.00</span>
                             </label>
                         </div>
                     </section>
@@ -104,9 +110,11 @@
                                 <div class="input-group-prepend" title="{{ __('Forma de pago') }}">
                                     <span class="input-group-text"><i class="fas fa-pen-nib"></i></span>
                                 </div>
-                                <select class="form-control" name="saleType" id="saleType" onchange="changeSaleType(this.value)" disabled>
+                                <select class="form-control" name="saleType" id="saleType"
+                                    onchange="changeSaleType(this.value)" disabled>
                                     @foreach (config('constants.SALE_TYPES') as $saleType)
-                                    <option value="{{ $saleType }}" {{ $sale->type === $saleType ? 'selected' : '' }}>{{ $saleType }}</option>
+                                    <option value="{{ $saleType }}" {{ $sale->type === $saleType ? 'selected' : '' }}>{{
+                                        $saleType }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -119,7 +127,8 @@
                             </div>
                             <select id="paymentMethod" name="paymentMethod" class="form-control">
                                 @foreach (config('constants.PAYMENT_METHODS') as $paymentMethod)
-                                <option value="{{ $paymentMethod }}" {{ $sale->payment_method === $paymentMethod ? 'selected' : '' }}>{{ $paymentMethod }}</option>
+                                <option value="{{ $paymentMethod }}" {{ $sale->payment_method === $paymentMethod ?
+                                    'selected' : '' }}>{{ $paymentMethod }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -127,16 +136,18 @@
                     <div class="col-lg-12 favorites-container">
                         <section class="favorites-container-products" id="containerProductsByCategory">
                             @foreach ($favorites as $product)
-                            <span
-                                class="badge badge-pill badge-info p-2"
-                                onclick="addProduct({{ json_encode(['id' => $product->id, 'name' => $product->name, 'quantity' => 1, 'prices' => $product->sales_prices, 'price' => $product->sales_prices[0], 'stock' => $product->stock]) }})">{{ $product->name }}
+                            <span class="badge badge-pill badge-info p-2"
+                                onclick="addProduct({{ json_encode(['id' => $product->id, 'name' => $product->name, 'quantity' => 1, 'prices' => $product->sales_prices, 'price' => $product->sales_prices[0], 'stock' => $product->stock]) }})">{{
+                                $product->name }}
                             </span>
                             @endforeach
                         </section>
                         <section class="favorites-container-categories">
-                            <span class="badge badge-pill badge-primary p-3 mb-1" id="spanCategory-0" onclick="getProductsByCategory(0)">{{ __('Favoritos') }}</span>
+                            <span class="badge badge-pill badge-primary p-3 mb-1" id="spanCategory-0"
+                                onclick="getProductsByCategory(0)">{{ __('Favoritos') }}</span>
                             @foreach ($categories as $category)
-                            <span class="badge badge-pill badge-dark p-3 mb-1" id="spanCategory-{{ $category->id}}" onclick="getProductsByCategory({{ $category->id }})">{{ $category->name }}</span>
+                            <span class="badge badge-pill badge-dark p-3 mb-1" id="spanCategory-{{ $category->id}}"
+                                onclick="getProductsByCategory({{ $category->id }})">{{ $category->name }}</span>
                             @endforeach
                         </section>
                     </div>
@@ -153,12 +164,7 @@
 </div>
 
 <!-- Modal Products -->
-<div
-    class="modal fade"
-    id="modalProducts"
-    tabindex="-1"
-    role="dialog"
-    aria-labelledby="modalProductsLabel"
+<div class="modal fade" id="modalProducts" tabindex="-1" role="dialog" aria-labelledby="modalProductsLabel"
     aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content">
@@ -185,12 +191,7 @@
 </div>
 
 <!-- Modal Customers -->
-<div
-    class="modal fade"
-    id="modalCustomers"
-    tabindex="-1"
-    role="dialog"
-    aria-labelledby="modalCustomersLabel"
+<div class="modal fade" id="modalCustomers" tabindex="-1" role="dialog" aria-labelledby="modalCustomersLabel"
     aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content">

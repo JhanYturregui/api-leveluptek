@@ -17,9 +17,11 @@
                                 <div class="input-group-prepend">
                                     <span class="input-group-text"><i class="fas fa-barcode"></i></span>
                                 </div>
-                                <input id="productCode" type="text" class="form-control" placeholder="{{ __('Código producto') }}" />
+                                <input id="productCode" type="text" class="form-control"
+                                    placeholder="{{ __('Código producto') }}" />
                                 <div class="input-group-append" title="Haga clic para ver el listado de productos">
-                                    <button class="btn btn-primary" onclick="getProductsForTransactions()"><i class="fas fa-search"></i></button>
+                                    <button class="btn btn-primary" onclick="getProductsForTransactions()"><i
+                                            class="fas fa-search"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -28,13 +30,11 @@
                                 <div class="input-group-prepend">
                                     <span class="input-group-text"><i class="fas fa-user"></i></span>
                                 </div>
-                                <input
-                                    id="documentNumberSupplier"
-                                    type="text"
-                                    class="form-control"
+                                <input id="documentNumberSupplier" type="text" class="form-control"
                                     placeholder="{{ __('Doc. Proveedor') }}" />
                                 <div class="input-group-append" title="Haga clic para ver el listado de proveedores">
-                                    <button class="btn btn-primary" onclick="getSuppliersForTransactions()"><i class="fas fa-search"></i></button>
+                                    <button class="btn btn-primary" onclick="getSuppliersForTransactions()"><i
+                                            class="fas fa-search"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -44,14 +44,11 @@
                                     <span class="input-group-text"><i class="fas fa-user"></i></span>
                                 </div>
                                 <input type="hidden" id="idSupplier" value="{{ $purchase->supplier->id }}">
-                                <input type="hidden" id="documentSupplier" value="{{ $purchase->supplier->document_number }}">
+                                <input type="hidden" id="documentSupplier"
+                                    value="{{ $purchase->supplier->document_number }}">
                                 <input type="hidden" id="nameSupplier" value="{{ $purchase->supplier->business_name }}">
-                                <input
-                                    id="businessNameSupplier"
-                                    type="text"
-                                    class="form-control"
-                                    placeholder="{{ __('Nombre Proveedor') }}"
-                                    readonly />
+                                <input id="businessNameSupplier" type="text" class="form-control"
+                                    placeholder="{{ __('Nombre Proveedor') }}" readonly />
                                 <div class="input-group-append" id="btnRemoveSupplier" style="display: none">
                                     <button class="btn btn-primary"><i class="fas fa-trash"></i></button>
                                 </div>
@@ -93,8 +90,10 @@
                                 <input type="file" id="invoice" name="invoice" accept="image/*" class="form-control" />
                                 <div class="input-group-append" id="invoiceImagePreviewContainer">
                                     <input type="hidden" id="urlPurchaseImage" value="{{ $purchase->path_image }}" />
-                                    <img id="invoiceImagePreview" alt="Vista previa" value="{{ $purchase->path_image }}" />
-                                    <button id="removeInvoiceImagePreview" title="Quitar archivo" class="btn btn-sm btn-primary"><i class="fas fa-trash"></i></button>
+                                    <img id="invoiceImagePreview" alt="Vista previa"
+                                        value="{{ $purchase->path_image }}" />
+                                    <button id="removeInvoiceImagePreview" title="Quitar archivo"
+                                        class="btn btn-sm btn-primary"><i class="fas fa-trash"></i></button>
                                 </div>
                             </div>
                         </div>
@@ -102,13 +101,18 @@
                     <div class="col-lg-12 favorites-container">
                         <section class="favorites-container-products" id="containerProductsByCategory">
                             @foreach ($favorites as $product)
-                            <span class="badge badge-pill badge-info p-2" onclick="addProduct({ id: {{ $product->id }}, name: '{{ $product->name }}', quantity: 1 })">{{ $product->name }}</span>
+                            <span class="badge badge-pill badge-info p-2"
+                                onclick="addProduct({{ json_encode(['id' => $product->id, 'name' => $product->name, 'quantity' => 1, 'hasContainer' => $product->has_container]) }})">
+                                {{ $product->name }}
+                            </span>
                             @endforeach
                         </section>
                         <section class="favorites-container-categories">
-                            <span class="badge badge-pill badge-primary p-3" id="spanCategory-0" onclick="getProductsByCategory(0)">{{ __('Favoritos') }}</span>
+                            <span class="badge badge-pill badge-primary p-3" id="spanCategory-0"
+                                onclick="getProductsByCategory(0)">{{ __('Favoritos') }}</span>
                             @foreach ($categories as $category)
-                            <span class="badge badge-pill badge-dark p-3" id="spanCategory-{{ $category->id}}" onclick="getProductsByCategory({{ $category->id }})">{{ $category->name }}</span>
+                            <span class="badge badge-pill badge-dark p-3" id="spanCategory-{{ $category->id}}"
+                                onclick="getProductsByCategory({{ $category->id }})">{{ $category->name }}</span>
                             @endforeach
                         </section>
                     </div>
@@ -125,12 +129,7 @@
 </div>
 
 <!-- Modal Products -->
-<div
-    class="modal fade"
-    id="modalProducts"
-    tabindex="-1"
-    role="dialog"
-    aria-labelledby="modalProductsLabel"
+<div class="modal fade" id="modalProducts" tabindex="-1" role="dialog" aria-labelledby="modalProductsLabel"
     aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content">
@@ -157,12 +156,7 @@
 </div>
 
 <!-- Modal Suppliers -->
-<div
-    class="modal fade"
-    id="modalSuppliers"
-    tabindex="-1"
-    role="dialog"
-    aria-labelledby="modalSuppliersLabel"
+<div class="modal fade" id="modalSuppliers" tabindex="-1" role="dialog" aria-labelledby="modalSuppliersLabel"
     aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content">

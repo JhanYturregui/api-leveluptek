@@ -9,7 +9,7 @@ class Sale extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['cash_session_id', 'customer_id', 'correlative', 'total_amount', 'partial_payment', 'type', 'payment_method', 'canceled'];
+    protected $fillable = ['cash_session_id', 'customer_id', 'correlative', 'total_amount', 'partial_payment', 'type', 'payment_method', 'bring_container', 'total_count_containers', 'canceled'];
 
     public function cash_session()
     {

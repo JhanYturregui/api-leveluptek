@@ -133,7 +133,7 @@ function getProductsByCategory(categoryId) {
                 products.forEach(product => {
                     if (product.stock > 0 || window.location.pathname.includes('compras')) {
                         const prices = product.prices.map(price => price.price);
-                        productsHtml += `<span class="badge badge-pill badge-info p-2 mr-1" onclick="addProduct({ id: ${product.id}, name: '${product.name}', quantity: 1, prices: [${prices}], price: ${prices[0]}, stock: ${product.stock} })">${product.name}</span>`;
+                        productsHtml += `<span class="badge badge-pill badge-info p-2 mr-1" onclick="addProduct({ id: ${product.id}, name: '${product.name}', quantity: 1, prices: [${prices}], price: ${prices[0]}, stock: ${product.stock}, hasContainer: ${product.has_container} })">${product.name}</span>`;
                     }
                 });
                 $('#containerProductsByCategory').html(productsHtml);

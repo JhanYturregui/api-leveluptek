@@ -34,6 +34,7 @@ class ProductService
             ->when(intval($categoryId) !== 0, function ($query) use ($categoryId) {
                 return $query->where('category_id', $categoryId);
             })
+            ->where('code', '!=', config('constants.CODE_PRODUCT_CONTAINER'))
             ->with('prices')
             ->get();
 
@@ -50,7 +51,7 @@ class ProductService
 
     public function findByCode($code)
     {
-        $product = Product::where('code', $code)->where('active', 1)->with('prices')->first();
+        $product = Product::where('code', $code)->where('active', 1)->where('parent_id', null)->with('prices')->first();
         if ($product) {
             $prices = $product['prices'];
             $arrSalesPrices = [];

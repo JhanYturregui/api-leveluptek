@@ -56,6 +56,7 @@ class ProductController extends Controller
             ->join('categories as c', 'p.category_id', 'c.id')
             ->with('prices')
             ->where('p.active', true)
+            ->where('p.code', '!=', config('constants.CODE_PRODUCT_CONTAINER'))
             ->orderBy('p.id', 'desc');
 
         return datatables()
@@ -93,8 +94,8 @@ class ProductController extends Controller
         $data['name'] = mb_strtoupper($request->input('name'));
         $data['code'] = mb_strtoupper($request->input('code'));
         $data['category_id'] = $request->input('category');
-        $data['favorite'] = ($request->input('favorite') === 'true');
         $data['favorite'] = $request->input('favorite');
+        $data['has_container'] = $request->input('hasContainer');
         $prices = $request->input('pricesList');
 
         DB::beginTransaction();
@@ -108,6 +109,7 @@ class ProductController extends Controller
                 }
                 $product->prices()->createMany($pricesList);
             }
+
             DB::commit();
 
             $response = [
@@ -150,7 +152,8 @@ class ProductController extends Controller
         $data['code'] = mb_strtoupper($request->input('code'));
         $data['name'] = mb_strtoupper($request->input('name'));
         $data['category_id'] = $request->input('category');
-        $data['favorite'] = ($request->input('favorite') === 'true');
+        $data['favorite'] = $request->input('favorite');
+        $data['has_container'] = $request->input('hasContainer');
         $prices = $request->input('pricesList');
 
         DB::beginTransaction();
@@ -192,6 +195,11 @@ class ProductController extends Controller
         try {
             $product = Product::findOrFail($id);
             $product->update(['active' => false]);
+
+            if ($product->has_container) {
+                $productContainer = Product::where('parent_id', $product->id)->first();
+                $productContainer->update(['active' => false]);
+            }
 
             $response = ['status' => true, 'message' => 'Eliminación correcta.'];
         } catch (\Exception $e) {
@@ -236,11 +244,13 @@ class ProductController extends Controller
                 'p.code',
                 'p.name',
                 'p.stock',
+                'p.has_container',
                 'c.name as category_name'
             )
             ->join('categories as c', 'p.category_id', 'c.id')
             ->with('prices')
             ->where('p.active', true)
+            ->where('p.code', '!=', config('constants.CODE_PRODUCT_CONTAINER'))
             ->orderBy('p.id', 'desc');
 
         return datatables()

@@ -24,4 +24,6 @@ return [
         'CASH_TRANSACTION_PAY' => 'pago',
     ],
 
+    'CODE_PRODUCT_CONTAINER' => 'ENVCER',
+
 ];

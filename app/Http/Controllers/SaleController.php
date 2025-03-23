@@ -6,7 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 use App\Models\CashSession;
+use App\Models\CashTransaction;
 use App\Models\Customer;
+use App\Models\Product;
 use App\Models\Sale;
 use App\Services\CategoryService;
 use App\Services\ProductService;
@@ -120,6 +122,8 @@ class SaleController extends Controller
         $data['partial_payment'] = $saleType === config('constants.SALE_TYPES.SALE_TYPE_CREDIT') ? $partialPayment : $totalAmount;
         $data['type'] = $saleType;
         $data['payment_method'] = $request->input('paymentMethod');
+        $data['bring_container'] = $request->input('bringContainer');
+        $data['total_count_containers'] = $request->input('totalCountContainers');
         $products = json_decode($request->input('productsList'));
 
         DB::beginTransaction();
@@ -133,9 +137,28 @@ class SaleController extends Controller
             }
             $sale->products()->attach($productsList);
 
+            $totalCredit = $totalAmount - $partialPayment;
+            if ($request->input('saleWithContainers')) {
+                if (!$request->input('bringContainer')) {
+                    $idProductWithContainer = Product::where('code', config('constants.CODE_PRODUCT_CONTAINER'))->value('id');
+                    $this->productService->decreaseStock($idProductWithContainer, $request->input('totalCountContainers'));
+
+                    $dataCashTransaction = array();
+                    $dataCashTransaction['cash_session_id'] = $cashSession->id;
+                    $dataCashTransaction['customer_id'] = $customerId;
+                    $dataCashTransaction['type'] = config('constants.CASH_TRANSACTION_TYPES.CASH_TRANSACTION_INCOME');
+                    //$dataCashTransaction['description'] = '';
+                    $dataCashTransaction['amount'] = $request->input('totalContainers');
+                    $dataCashTransaction['sale_id'] = $sale->id;
+                    CashTransaction::create($dataCashTransaction);
+
+                    $totalCredit += $request->input('totalContainers');
+                }
+            }
+
             if ($saleType === config('constants.SALE_TYPES.SALE_TYPE_CREDIT')) {
                 $customer = Customer::find($customerId);
-                $customer->available_balance -= ($totalAmount - $partialPayment);
+                $customer->available_balance -= $totalCredit;
                 $customer->save();
             }
 
@@ -200,6 +223,16 @@ class SaleController extends Controller
             }
         }
 
+        $idProductWithContainer = Product::where('code', config('constants.CODE_PRODUCT_CONTAINER'))->value('id');
+        if (!$sale->bring_container) {
+            $this->productService->increaseStock($idProductWithContainer, $sale->total_count_containers);
+        }
+
+        $oldProducts = $sale->products;
+        foreach ($oldProducts as $product) {
+            $this->productService->increaseStock($product->id, $product->pivot->quantity);
+        }
+
         $data = array();
         $data['cash_session_id'] = $cashSession->id;
         $data['customer_id'] = $customerId;
@@ -207,6 +240,8 @@ class SaleController extends Controller
         $data['partial_payment'] = $sale->type === config('constants.SALE_TYPES.SALE_TYPE_CREDIT') ? $partialPayment : $totalAmount;
         //$data['type'] = $saleType;
         $data['payment_method'] = $request->input('paymentMethod');
+        $data['bring_container'] = $request->input('bringContainer');
+        $data['total_count_containers'] = $request->input('totalCountContainers');
         $products = json_decode($request->input('productsList'));
 
         DB::beginTransaction();
@@ -220,6 +255,26 @@ class SaleController extends Controller
                 $productsList[$product->id] = ['quantity' => $product->quantity, 'price' => $product->price];
             }
             $sale->products()->sync($productsList);
+
+            if ($request->input('saleWithContainers')) {
+                if (!$request->input('bringContainer')) {
+                    $this->productService->decreaseStock($idProductWithContainer, $request->input('totalCountContainers'));
+
+                    $dataCashTransaction = array();
+                    $dataCashTransaction['cash_session_id'] = $cashSession->id;
+                    $dataCashTransaction['customer_id'] = $customerId;
+                    $dataCashTransaction['type'] = config('constants.CASH_TRANSACTION_TYPES.CASH_TRANSACTION_INCOME');
+                    //$dataCashTransaction['description'] = '';
+                    $dataCashTransaction['amount'] = $request->input('totalContainers');
+                    $dataCashTransaction['sale_id'] = $sale->id;
+                    CashTransaction::create($dataCashTransaction);
+                } else {
+                    $cashTransaction = CashTransaction::where('sale_id', $id)->first();
+                    if ($cashTransaction) {
+                        $cashTransaction->delete();
+                    }
+                }
+            }
 
             if ($sale->type === config('constants.SALE_TYPES.SALE_TYPE_CREDIT')) {
                 $customer = Customer::find($customerId);
@@ -258,6 +313,21 @@ class SaleController extends Controller
 
             foreach ($sale->products as $product) {
                 $this->productService->increaseStock($product->id, $product->pivot->quantity);
+            }
+
+            if (!$sale->bring_container) {
+                $idProductWithContainer = Product::where('code', config('constants.CODE_PRODUCT_CONTAINER'))->value('id');
+                $this->productService->increaseStock($idProductWithContainer, $sale->total_count_containers);
+                $cashTransaction = CashTransaction::where('sale_id', $id)->first();
+                if ($cashTransaction) {
+                    $cashTransaction->delete();
+                }
+            }
+
+            if ($sale->type === config('constants.SALE_TYPES.SALE_TYPE_CREDIT')) {
+                $customer = Customer::find($sale->customer_id);
+                $customer->available_balance += $sale->total_amount - $sale->partial_payment;
+                $customer->save();
             }
 
             $sale->delete();

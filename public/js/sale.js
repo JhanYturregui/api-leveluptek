@@ -21,16 +21,20 @@ const MAIN_DATATABLE_PARAMS = {
 
 let productsList = [];
 let totalAmount = 0;
+let totalContainers = 0;
+let totalWithContainers = 0;
+let totalCountContainers = 0;
 const INITIAL_QUANTITY = 1;
 const INITIAL_PARTIAL_PAYMENT = 0;
 const DECIMAL_PLACES = 2;
+const PRICE_PER_CONTAINER = 2;
 
 function getProducts() {
     if (IS_UPDATE) {
       let products = JSON.parse($('#products').val());
       productsList = products.map(product => {
         let prices = product.prices.map(price => { return price.price });
-        return { id: product.id, name: product.name, quantity: product.pivot.quantity, prices: prices, price: product.pivot.price, stock: product.stock}
+        return { id: product.id, name: product.name, quantity: product.pivot.quantity, prices: prices, price: product.pivot.price, stock: product.stock, hasContainer: product.has_container}
       })
       fillShoppingCart();
       calculateTotalAmount();
@@ -138,13 +142,23 @@ function removeProduct(productId) {
 
 function calculateTotalAmount() {
     totalAmount = 0;
+    totalContainers = 0;
+    totalCountContainers = 0;
     productsList.forEach(product => {
         const quantity = parseFloat($(`#quantity-${product.id}`).val());
         const price = parseFloat($(`#price-${product.id}`).val());
         const partial = quantity * price;
         totalAmount += partial;
+        if (product.hasContainer) {
+            const partial2 = quantity * PRICE_PER_CONTAINER;
+            totalContainers += partial2;
+            totalCountContainers += quantity;
+        }
     });
+    totalWithContainers = totalAmount + totalContainers;
     $(`#textTotalAmount`).text(`S/. ${totalAmount.toFixed(DECIMAL_PLACES)}`);
+    $(`#textTotalContainers`).text(`S/. ${totalContainers.toFixed(DECIMAL_PLACES)}`);
+    $(`#textTotalWithContainers`).text(`S/. ${totalWithContainers.toFixed(DECIMAL_PLACES)}`);
 }
 
 function verifyStock(productId) {
@@ -160,11 +174,26 @@ function verifyStock(productId) {
     calculateTotalAmount();
 }
 
+function checkVisibilityContainer() {
+    const isSaleTypeCash = $('#saleType').val() === 'contado';
+    const productsWithContainer = productsList.filter(product => product.hasContainer === 1).length > 0;
+
+    const visibility = (productsWithContainer && isSaleTypeCash) ? 'visible' : 'hidden';
+    $('#divContainer').css('visibility', visibility);
+
+    const visibilityLabels = (productsWithContainer && !$('#bringContainer').is(':checked') && isSaleTypeCash) ? 'visible' : 'hidden';
+    $('#labelTotalContainers').css('visibility', visibilityLabels);
+    $('#labelTotalWithContainers').css('visibility', visibilityLabels);
+}
+
 function fillShoppingCart() {
     $('#bodyShoppingCart').html('');
     let bodyContent = '';
+
+    checkVisibilityContainer();
+
     productsList.forEach(product => {
-        const prices = product.prices
+        const prices = product.prices;
         bodyContent +=  `<tr>
                             <td class="wide-column">${product.name}</td>
                             <td><input type="number" id="quantity-${product.id}" class="small-input" value="${product.quantity}" onblur="verifyStock(${product.id})" /></td>
@@ -198,7 +227,7 @@ function getProductByCode(code) {
                 const product = a.data;
                 if (product && product.stock > 0) {
                     const prices = product.sales_prices;
-                    addProduct({ id: product.id, name: product.name, quantity: INITIAL_QUANTITY, prices: prices, price: prices[0], stock: product.stock });
+                    addProduct({ id: product.id, name: product.name, quantity: INITIAL_QUANTITY, prices: prices, price: prices[0], stock: product.stock, hasContainer: product.has_container });
                     $('#codeProduct').focus();
                 } else {
                     showAlert('Alerta', 'Producto sin stock', 'warning', 'Ok', 'productCode');
@@ -229,10 +258,13 @@ function changeSaleType(type) {
     $('#partialPayment').val(INITIAL_PARTIAL_PAYMENT.toFixed(DECIMAL_PLACES))
     if (type === 'contado') {
         $('#partialPayment').attr('readonly', true);
+        $('#bringContainer').prop('checked', false);
     } else {
         $('#partialPayment').attr('readonly', false);
         $('#partialPayment').focus();
+        $('#bringContainer').prop('checked', true);
     }
+    checkVisibilityContainer();
 }
 
 $('#formRegister').on('submit', function (event) {
@@ -250,6 +282,16 @@ $('#formRegister').on('submit', function (event) {
         showAlert('Error!', 'Debe elegir un cliente al ser la venta a crédito', 'error', 'Ok', 'codeProduct');
         return;
     }
+
+    const bringContainer = $('#bringContainer').is(':checked') ? 1 : 0;
+    const totalCont = $('#bringContainer').is(':checked') ? 0 : totalContainers;
+    const totalCountCont = $('#bringContainer').is(':checked') ? 0 : totalCountContainers;
+    const saleWithContainers = productsList.filter(product => product.hasContainer === 1).length > 0 ? 1 : 0;
+
+    if (saleWithContainers && !bringContainer && !customerId) {
+        showAlert('Error!', 'Debe elegir un cliente cuando la venta es con envases', 'error', 'Ok', 'codeProduct');
+        return;
+    }
     
     const products = productsList.map(({id, quantity, price}) => ({id, quantity, price}));
     const data = new FormData(this);
@@ -257,6 +299,10 @@ $('#formRegister').on('submit', function (event) {
     data.append('productsList', JSON.stringify(products));
     data.append('partialPayment', partialPayment);
     data.append('totalAmount', totalAmount);
+    data.append('bringContainer', bringContainer);
+    data.append('totalContainers', totalCont);
+    data.append('totalCountContainers', totalCountCont);
+    data.append('saleWithContainers', saleWithContainers);
 
     $.ajax({
         method: 'post',
@@ -296,6 +342,16 @@ $('#formUpdate').on('submit', function (event) {
         showAlert('Error!', 'Debe elegir un cliente al ser la venta a crédito', 'error', 'Ok', 'codeProduct');
         return;
     }
+
+    const bringContainer = $('#bringContainer').is(':checked') ? 1 : 0;
+    const totalCont = $('#bringContainer').is(':checked') ? 0 : totalContainers;
+    const totalCountCont = $('#bringContainer').is(':checked') ? 0 : totalCountContainers;
+    const saleWithContainers = productsList.filter(product => product.hasContainer === 1).length > 0 ? 1 : 0;
+
+    if (saleWithContainers && !bringContainer && !customerId) {
+        showAlert('Error!', 'Debe elegir un cliente cuando la venta es con envases', 'error', 'Ok', 'codeProduct');
+        return;
+    }
     
     const products = productsList.map(({id, quantity, price}) => ({id, quantity, price}));
     const data = new FormData(this);
@@ -303,6 +359,10 @@ $('#formUpdate').on('submit', function (event) {
     data.append('productsList', JSON.stringify(products));
     data.append('partialPayment', partialPayment);
     data.append('totalAmount', totalAmount);
+    data.append('bringContainer', bringContainer);
+    data.append('totalContainers', totalCont);
+    data.append('totalCountContainers', totalCountCont);
+    data.append('saleWithContainers', saleWithContainers);
 
     $.ajax({
         method: 'post',
@@ -409,3 +469,9 @@ function getCustomerByDocumentNumber(documentNumber) {
         },
     });
 }
+
+$('#bringContainer').on('change', function(){
+    const visibility = $('#bringContainer').is(':checked') ? 'hidden' : 'visible';
+    $('#labelTotalContainers').css('visibility', visibility);
+    $('#labelTotalWithContainers').css('visibility', visibility);
+})

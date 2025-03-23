@@ -20,6 +20,7 @@ class CreateCashTransactionsTable extends Migration
             $table->enum('type', config('constants.CASH_TRANSACTION_TYPES'))->default(config('constants.CASH_TRANSACTION_TYPES.CASH_TRANSACTION_EXPENSE'));
             $table->string('description')->nullable();
             $table->decimal('amount', 8, 2);
+            $table->boolean('canceled')->default(false);
             $table->timestamps();
         });
     }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\CashSession;
+use App\Models\Product;
 use App\Models\Purchase;
 use App\Services\PurchaseService;
 use App\Services\ProductService;
@@ -121,6 +122,10 @@ class PurchaseController extends Controller
             foreach ($products as $product) {
                 $this->productService->increaseStock($product->id, $product->quantity);
                 $productsList[$product->id] = ['quantity' => $product->quantity, 'price' => $product->price];
+                if (intval($product->hasContainer) === 1) {
+                    $productContainerId = Product::where('code', config('constants.CODE_PRODUCT_CONTAINER'))->value('id');
+                    $this->productService->increaseStock($productContainerId, $product->quantity);
+                }
             }
             $purchase->products()->attach($productsList);
             DB::commit();
@@ -192,12 +197,20 @@ class PurchaseController extends Controller
             $oldProductsList = $purchase->products;
             foreach ($oldProductsList as $product) {
                 $this->productService->decreaseStock($product->id, $product->pivot->quantity);
+                if (intval($product->has_container) === 1) {
+                    $productContainerId = Product::where('code', config('constants.CODE_PRODUCT_CONTAINER'))->value('id');
+                    $this->productService->decreaseStock($productContainerId, $product->pivot->quantity);
+                }
             }
 
             $productsList = [];
             foreach ($products as $product) {
                 $this->productService->increaseStock($product->id, $product->quantity);
                 $productsList[$product->id] = ['quantity' => $product->quantity, 'price' => $product->price];
+                if (intval($product->hasContainer) === 1) {
+                    $productContainerId = Product::where('code', config('constants.CODE_PRODUCT_CONTAINER'))->value('id');
+                    $this->productService->increaseStock($productContainerId, $product->quantity);
+                }
             }
             $purchase->products()->sync($productsList);
             DB::commit();
